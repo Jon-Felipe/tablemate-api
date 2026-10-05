@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Restaurant } from './entities/restaurant.entity.js';
+import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 
 @Injectable()
 export class RestaurantsRepository {
@@ -39,5 +40,17 @@ export class RestaurantsRepository {
 
   findById(id: string) {
     return this.restaurants.find((r) => r.id === id);
+  }
+
+  create(createRestaurantDto: CreateRestaurantDto): Restaurant {
+    const restaurant: Restaurant = {
+      id: `restaurant-${this.restaurants.length + 1}`,
+      ...createRestaurantDto,
+      rating: 0,
+    };
+
+    this.restaurants.push(restaurant);
+
+    return restaurant;
   }
 }

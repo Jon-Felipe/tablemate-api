@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { RestaurantsRepository } from './restaurants.repository.js';
+import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 
 @Injectable()
 export class RestaurantsService {
@@ -16,5 +17,9 @@ export class RestaurantsService {
       throw new NotFoundException(`Restaurant with ID ${id} not found`);
 
     return restaurant;
+  }
+
+  create(createRestaurantDto: CreateRestaurantDto) {
+    return this.restaurantsRepository.create(createRestaurantDto);
   }
 }

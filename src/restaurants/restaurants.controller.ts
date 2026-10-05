@@ -1,5 +1,6 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service.js';
+import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 
 @Controller('restaurants')
 export class RestaurantsController {
@@ -13,5 +14,10 @@ export class RestaurantsController {
   @Get(':id')
   findById(@Param('id') id: string) {
     return this.restaurantService.findById(id);
+  }
+
+  @Post()
+  create(@Body() createRestaurantDto: CreateRestaurantDto) {
+    return this.restaurantService.create(createRestaurantDto);
   }
 }
