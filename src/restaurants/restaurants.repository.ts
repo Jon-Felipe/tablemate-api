@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { Restaurant } from './entities/restaurant.entity.js';
 
 @Injectable()
 export class RestaurantsRepository {
-  private readonly restaurants = [
+  private readonly restaurants: Restaurant[] = [
     {
       id: 'restaurant-1',
       name: 'The Golden Fork',
