@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Restaurant } from './entities/restaurant.entity.js';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
+import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
 
 @Injectable()
 export class RestaurantsRepository {
@@ -52,5 +53,23 @@ export class RestaurantsRepository {
     this.restaurants.push(restaurant);
 
     return restaurant;
+  }
+
+  update(
+    id: string,
+    updateRestaurantDto: UpdateRestaurantDto,
+  ): Restaurant | undefined {
+    const restaurantIndex = this.restaurants.findIndex((r) => r.id === id);
+
+    if (restaurantIndex === -1) {
+      return undefined;
+    }
+
+    this.restaurants[restaurantIndex] = {
+      ...this.restaurants[restaurantIndex],
+      ...updateRestaurantDto,
+    };
+
+    return this.restaurants[restaurantIndex];
   }
 }
