@@ -35,4 +35,11 @@ export class RestaurantsService {
 
     return restaurant;
   }
+
+  remove(id: string) {
+    const restaurant = this.restaurantsRepository.remove(id);
+
+    if (!restaurant)
+      throw new NotFoundException(`Restaurant with ID ${id} not found`);
+  }
 }

@@ -72,4 +72,16 @@ export class RestaurantsRepository {
 
     return this.restaurants[restaurantIndex];
   }
+
+  remove(id: string): boolean {
+    const restaurantIndex = this.restaurants.findIndex((r) => r.id === id);
+
+    if (restaurantIndex === -1) {
+      return false;
+    }
+
+    this.restaurants.splice(restaurantIndex, 1);
+
+    return true;
+  }
 }
