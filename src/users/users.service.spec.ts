@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service.js';
 import { UsersRepository } from './users.repository.js';
 import { NotFoundException } from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto.js';
+import { User, UserRole } from './entities/user.entity.js';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -9,6 +11,7 @@ describe('UsersService', () => {
   const usersRepositoryMock = {
     findAll: vi.fn(),
     findById: vi.fn(),
+    create: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -71,5 +74,35 @@ describe('UsersService', () => {
     expect(() => {
       service.findById('does-not-exist');
     }).toThrow(NotFoundException);
+  });
+
+  it('should create a user', () => {
+    const createUserDto: CreateUserDto = {
+      name: 'David Jones',
+      email: 'david@example.com',
+      password: 'secret123',
+    };
+
+    const createdUser: User = {
+      id: 'user-4',
+      name: 'David Jones',
+      email: 'david@example.com',
+      passwordHash: 'temporary-secret123',
+      role: UserRole.CUSTOMER,
+    };
+
+    usersRepositoryMock.create.mockReturnValue(createdUser);
+
+    const result = service.create(createUserDto);
+
+    expect(usersRepositoryMock.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'David Jones',
+        email: 'david@example.com',
+        passwordHash: 'temporary-secret123',
+        role: UserRole.CUSTOMER,
+      }),
+    );
+    expect(result).toEqual(createdUser);
   });
 });
