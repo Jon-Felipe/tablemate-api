@@ -146,7 +146,7 @@ describe('API (e2e)', () => {
       .expect(404);
   });
 
-  it('GET /api/v1/users should return all users', () => {
+  it('GET /api/v1/users should return all users without password hashes', () => {
     return request(app.getHttpServer())
       .get('/api/v1/users')
       .expect(200)
@@ -154,6 +154,9 @@ describe('API (e2e)', () => {
         expect(response.body.statusCode).toBe(200);
         expect(response.body.message).toBe('Users retrieved successfully');
         expect(response.body.data).toHaveLength(3);
+        response.body.data.forEach((user: Record<string, unknown>) => {
+          expect(user.passwordHash).toBeUndefined();
+        });
       });
   });
 
@@ -172,6 +175,7 @@ describe('API (e2e)', () => {
             role: 'CUSTOMER',
           }),
         );
+        expect(response.body.data.passwordHash).toBeUndefined();
       });
   });
 
