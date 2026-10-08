@@ -28,7 +28,7 @@ describe('UsersController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should return all users', () => {
+  it('should return all users without password hashes', () => {
     const users: User[] = [
       {
         id: 'user-1',
@@ -53,11 +53,24 @@ describe('UsersController', () => {
     expect(result).toEqual({
       statusCode: 200,
       message: 'Users retrieved successfully',
-      data: users,
+      data: [
+        {
+          id: 'user-1',
+          name: 'Alice Johnson',
+          email: 'alice@example.com',
+          role: UserRole.CUSTOMER,
+        },
+        {
+          id: 'user-2',
+          name: 'Bob Smith',
+          email: 'bob@example.com',
+          role: UserRole.STAFF,
+        },
+      ],
     });
   });
 
-  it('should return a user by id', () => {
+  it('should return a user by id with the password hash', () => {
     const user: User = {
       id: 'user-1',
       name: 'Alice Johnson',
@@ -72,7 +85,12 @@ describe('UsersController', () => {
     expect(result).toEqual({
       statusCode: 200,
       message: 'User retrieved successfully',
-      data: user,
+      data: {
+        id: 'user-1',
+        name: 'Alice Johnson',
+        email: 'alice@example.com',
+        role: UserRole.CUSTOMER,
+      },
     });
   });
 

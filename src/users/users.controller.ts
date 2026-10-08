@@ -10,10 +10,12 @@ export class UsersController {
   findAll() {
     const users = this.usersService.findAll();
 
+    const safeUsers = users.map(({ passwordHash, ...user }) => user);
+
     return {
       statusCode: 200,
       message: 'Users retrieved successfully',
-      data: users,
+      data: safeUsers,
     };
   }
 
@@ -21,10 +23,12 @@ export class UsersController {
   findById(@Param('id') id: string) {
     const user = this.usersService.findById(id);
 
+    const { passwordHash, ...safeUser } = user;
+
     return {
       statusCode: 200,
       message: 'User retrieved successfully',
-      data: user,
+      data: safeUser,
     };
   }
 
