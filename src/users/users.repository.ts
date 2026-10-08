@@ -34,4 +34,10 @@ export class UsersRepository {
   findById(id: string) {
     return this.users.find((u) => u.id === id);
   }
+
+  create(user: User): User {
+    this.users.push(user);
+
+    return user;
+  }
 }
