@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller.js';
 import { UsersService } from './users.service.js';
 import { User, UserRole } from './entities/user.entity.js';
+import { CreateUserDto } from './dto/create-user.dto.js';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -9,6 +10,7 @@ describe('UsersController', () => {
   const userssServiceMock = {
     findAll: vi.fn(),
     findById: vi.fn(),
+    create: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -71,6 +73,38 @@ describe('UsersController', () => {
       statusCode: 200,
       message: 'User retrieved successfully',
       data: user,
+    });
+  });
+
+  it('should create a user', () => {
+    const createUserDto: CreateUserDto = {
+      name: 'David Jones',
+      email: 'david@example.com',
+      password: 'secret123',
+    };
+
+    const createdUser: User = {
+      id: 'user-4',
+      name: 'David Jones',
+      email: 'david@example.com',
+      passwordHash: 'temporary-secret123',
+      role: UserRole.CUSTOMER,
+    };
+
+    userssServiceMock.create.mockReturnValue(createdUser);
+
+    const result = controller.create(createUserDto);
+
+    expect(userssServiceMock.create).toHaveBeenCalledWith(createUserDto);
+    expect(result).toEqual({
+      statusCode: 201,
+      message: 'User created successfully',
+      data: {
+        id: 'user-4',
+        name: 'David Jones',
+        email: 'david@example.com',
+        role: UserRole.CUSTOMER,
+      },
     });
   });
 });
