@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module.js';
 
-describe('Restaurants API (e2e)', () => {
+describe('API (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -143,6 +143,41 @@ describe('Restaurants API (e2e)', () => {
   it('DELETE /api/v1/restaurants/:id should return 404 for a missing restaurant', () => {
     return request(app.getHttpServer())
       .delete('/api/v1/restaurants/does-not-exist')
+      .expect(404);
+  });
+
+  it('GET /api/v1/users should return all users', () => {
+    return request(app.getHttpServer())
+      .get('/api/v1/users')
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.statusCode).toBe(200);
+        expect(response.body.message).toBe('Users retrieved successfully');
+        expect(response.body.data).toHaveLength(3);
+      });
+  });
+
+  it('GET /api/v1/users/:id should return a user', () => {
+    return request(app.getHttpServer())
+      .get('/api/v1/users/user-1')
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.statusCode).toBe(200);
+        expect(response.body.message).toBe('User retrieved successfully');
+        expect(response.body.data).toEqual(
+          expect.objectContaining({
+            id: 'user-1',
+            name: 'Alice Johnson',
+            email: 'alice@example.com',
+            role: 'CUSTOMER',
+          }),
+        );
+      });
+  });
+
+  it('GET /api/v1/users/:id should return 404 for a missing user', () => {
+    return request(app.getHttpServer())
+      .get('/api/v1/users/does-not-exist')
       .expect(404);
   });
 });
