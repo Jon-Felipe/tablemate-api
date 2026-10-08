@@ -1,3 +1,4 @@
+import { User, UserRole } from './entities/user.entity.js';
 import { UsersRepository } from './users.repository.js';
 
 describe('UsersRepository', () => {
@@ -42,5 +43,19 @@ describe('UsersRepository', () => {
     const result = repository.findById('does-not-exist');
 
     expect(result).toBeUndefined();
+  });
+
+  it('should create a user', () => {
+    const user: User = {
+      id: 'user-4',
+      name: 'David Jones',
+      email: 'david@example.com',
+      passwordHash: 'hashed-password-4',
+      role: UserRole.CUSTOMER,
+    };
+
+    const result = repository.create(user);
+    expect(result).toEqual(user);
+    expect(repository.findById('user-4')).toEqual(user);
   });
 });
