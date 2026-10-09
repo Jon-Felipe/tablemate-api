@@ -76,6 +76,16 @@ describe('UsersRepository', () => {
     );
   });
 
+  it('should find a user when the email is has surrounding whitespace', () => {
+    const result = repository.findByEmail(' alice@example.com ');
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: 'user-1',
+        email: 'alice@example.com',
+      }),
+    );
+  });
+
   it('should return undefined when a user does not exist', () => {
     const result = repository.findById('does-not-exist');
 
