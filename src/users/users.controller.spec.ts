@@ -70,7 +70,7 @@ describe('UsersController', () => {
     });
   });
 
-  it('should return a user by id with the password hash', () => {
+  it('should return a user by id without the password hash', () => {
     const user: User = {
       id: 'user-1',
       name: 'Alice Johnson',
@@ -94,7 +94,7 @@ describe('UsersController', () => {
     });
   });
 
-  it('should create a user', () => {
+  it('should create a user', async () => {
     const createUserDto: CreateUserDto = {
       name: 'David Jones',
       email: 'david@example.com',
@@ -105,13 +105,13 @@ describe('UsersController', () => {
       id: 'user-4',
       name: 'David Jones',
       email: 'david@example.com',
-      passwordHash: 'temporary-secret123',
+      passwordHash: 'test-argon2-hash',
       role: UserRole.CUSTOMER,
     };
 
-    userssServiceMock.create.mockReturnValue(createdUser);
+    userssServiceMock.create.mockResolvedValue(createdUser);
 
-    const result = controller.create(createUserDto);
+    const result = await controller.create(createUserDto);
 
     expect(userssServiceMock.create).toHaveBeenCalledWith(createUserDto);
     expect(result).toEqual({
