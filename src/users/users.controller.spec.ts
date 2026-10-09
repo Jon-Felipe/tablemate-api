@@ -7,7 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto.js';
 describe('UsersController', () => {
   let controller: UsersController;
 
-  const userssServiceMock = {
+  const usersServiceMock = {
     findAll: vi.fn(),
     findById: vi.fn(),
     create: vi.fn(),
@@ -18,7 +18,7 @@ describe('UsersController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
-      providers: [{ provide: UsersService, useValue: userssServiceMock }],
+      providers: [{ provide: UsersService, useValue: usersServiceMock }],
     }).compile();
 
     controller = module.get<UsersController>(UsersController);
@@ -46,10 +46,10 @@ describe('UsersController', () => {
       },
     ];
 
-    userssServiceMock.findAll.mockReturnValue(users);
+    usersServiceMock.findAll.mockReturnValue(users);
 
     const result = controller.findAll();
-    expect(userssServiceMock.findAll).toHaveBeenCalled();
+    expect(usersServiceMock.findAll).toHaveBeenCalled();
     expect(result).toEqual({
       statusCode: 200,
       message: 'Users retrieved successfully',
@@ -78,10 +78,10 @@ describe('UsersController', () => {
       passwordHash: 'hashed-password-1',
       role: UserRole.CUSTOMER,
     };
-    userssServiceMock.findById.mockReturnValue(user);
+    usersServiceMock.findById.mockReturnValue(user);
 
     const result = controller.findById('user-1');
-    expect(userssServiceMock.findById).toHaveBeenCalledWith('user-1');
+    expect(usersServiceMock.findById).toHaveBeenCalledWith('user-1');
     expect(result).toEqual({
       statusCode: 200,
       message: 'User retrieved successfully',
@@ -109,11 +109,11 @@ describe('UsersController', () => {
       role: UserRole.CUSTOMER,
     };
 
-    userssServiceMock.create.mockResolvedValue(createdUser);
+    usersServiceMock.create.mockResolvedValue(createdUser);
 
     const result = await controller.create(createUserDto);
 
-    expect(userssServiceMock.create).toHaveBeenCalledWith(createUserDto);
+    expect(usersServiceMock.create).toHaveBeenCalledWith(createUserDto);
     expect(result).toEqual({
       statusCode: 201,
       message: 'User created successfully',

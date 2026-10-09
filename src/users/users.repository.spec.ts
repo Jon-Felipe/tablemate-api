@@ -76,7 +76,7 @@ describe('UsersRepository', () => {
     );
   });
 
-  it('should find a user when the email is has surrounding whitespace', () => {
+  it('should find a user when the email has surrounding whitespace', () => {
     const result = repository.findByEmail(' alice@example.com ');
     expect(result).toEqual(
       expect.objectContaining({
