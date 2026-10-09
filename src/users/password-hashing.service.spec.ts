@@ -33,4 +33,20 @@ describe('PasswordHashingService', () => {
 
     expect(firstHash).not.toBe(secondHash);
   });
+
+  it('should return true when the password matches the hash', async () => {
+    const password = 'mySecretPassword123';
+    const passwordHash = await service.hash(password);
+
+    await expect(service.verify(password, passwordHash)).resolves.toBe(true);
+  });
+
+  it('should return false when the password does not match the hash', async () => {
+    const password = 'mySecretPassword123';
+    const passwordHash = await service.hash(password);
+
+    await expect(
+      service.verify('aDifferentPassword123', passwordHash),
+    ).resolves.toBe(false);
+  });
 });
