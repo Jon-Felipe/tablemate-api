@@ -23,6 +23,8 @@ describe('UsersService', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
+    passwordHashingServiceMock.hash.mockResolvedValue('test-argon2-hash');
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
@@ -136,6 +138,24 @@ describe('UsersService', () => {
         email: 'david@example.com',
       }),
     );
+  });
+
+  it('should not create a user when password hashing fails', async () => {
+    const createUserDto: CreateUserDto = {
+      name: 'David Jones',
+      email: 'David@Example.com',
+      password: 'aSecurePassword123',
+    };
+
+    usersRepositoryMock.findByEmail.mockReturnValue(undefined);
+    passwordHashingServiceMock.hash.mockRejectedValue(
+      new Error('Password hashing failed'),
+    );
+
+    await expect(service.create(createUserDto)).rejects.toThrow(
+      'Password hashing failed',
+    );
+    expect(usersRepositoryMock.create).not.toHaveBeenCalled();
   });
 
   it('should throw ConflictException when the email is already registered', async () => {
