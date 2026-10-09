@@ -2,10 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersRepository } from './users.repository.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { User, UserRole } from './entities/user.entity.js';
+import { PasswordHashingService } from './password-hashing.service.js';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly passwordHashingService: PasswordHashingService,
+  ) {}
 
   findAll() {
     return this.usersRepository.findAll();
@@ -19,12 +23,16 @@ export class UsersService {
     return user;
   }
 
-  create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const passwordHash = await this.passwordHashingService.hash(
+      createUserDto.password,
+    );
+
     const user: User = {
       id: crypto.randomUUID(),
       name: createUserDto.name,
       email: createUserDto.email,
-      passwordHash: `temporary-${createUserDto.password}`,
+      passwordHash,
       role: UserRole.CUSTOMER,
     };
 
