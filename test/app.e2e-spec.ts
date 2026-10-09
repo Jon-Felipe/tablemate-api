@@ -191,7 +191,7 @@ describe('API (e2e)', () => {
       .send({
         name: 'David Jones',
         email: 'david@example.com',
-        password: 'secret123',
+        password: 'aSecurePassword123',
       })
       .expect(201)
       .expect((response) => {
@@ -209,13 +209,24 @@ describe('API (e2e)', () => {
       });
   });
 
+  it('POST /api/v1/users should reject an invalid email', () => {
+    return request(app.getHttpServer())
+      .post('/api/v1/users')
+      .send({
+        name: 'Alice',
+        email: 'not-an-email',
+        password: 'aSecurePassword123',
+      })
+      .expect(400);
+  });
+
   it('POST /api/v1/users should reject a duplicate email', () => {
     return request(app.getHttpServer())
       .post('/api/v1/users')
       .send({
         name: 'Another Alice',
         email: 'alice@example.com',
-        password: 'secret123',
+        password: 'aSecurePassword123',
       })
       .expect(409)
       .expect((response) => {
@@ -230,12 +241,23 @@ describe('API (e2e)', () => {
       .send({
         name: 'Another Alice',
         email: 'Alice@Example.com',
-        password: 'secret123',
+        password: 'aSecurePassword123',
       })
       .expect(409)
       .expect((response) => {
         expect(response.body.statusCode).toBe(409);
         expect(response.body.message).toBe('Email is already registered');
       });
+  });
+
+  it('POST /api/v1/users should reject a password shorter than 12 characters', () => {
+    return request(app.getHttpServer())
+      .post('/api/v1/users')
+      .send({
+        name: 'Alice',
+        email: 'alice@example.com',
+        password: 'secret123',
+      })
+      .expect(400);
   });
 });
