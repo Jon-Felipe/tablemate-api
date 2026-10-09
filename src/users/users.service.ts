@@ -40,7 +40,7 @@ export class UsersService {
     const user: User = {
       id: crypto.randomUUID(),
       name: createUserDto.name,
-      email: createUserDto.email,
+      email: createUserDto.email.trim().toLowerCase(),
       passwordHash,
       role: UserRole.CUSTOMER,
     };

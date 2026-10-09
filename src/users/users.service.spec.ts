@@ -117,6 +117,27 @@ describe('UsersService', () => {
     expect(result).toEqual(createdUser);
   });
 
+  it('should normalize the email when creating a user', async () => {
+    const createUserDto: CreateUserDto = {
+      name: 'David Jones',
+      email: 'David@Example.com',
+      password: 'secret123',
+    };
+
+    usersRepositoryMock.findByEmail.mockReturnValue(undefined);
+    usersRepositoryMock.create.mockImplementation((u) => u);
+
+    const result = await service.create(createUserDto);
+
+    expect(result.email).toBe('david@example.com');
+
+    expect(usersRepositoryMock.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'david@example.com',
+      }),
+    );
+  });
+
   it('should throw ConflictException when the email is already registered', async () => {
     usersRepositoryMock.findByEmail.mockReturnValue({
       id: 'user-1',
