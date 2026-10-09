@@ -56,6 +56,26 @@ describe('UsersRepository', () => {
     expect(result).toBeUndefined();
   });
 
+  it('should find a user when the email has different casing', () => {
+    const result = repository.findByEmail('Alice@Example.com');
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: 'user-1',
+        email: 'alice@example.com',
+      }),
+    );
+  });
+
+  it('should find a user when the email is uppercase', () => {
+    const result = repository.findByEmail('ALICE@EXAMPLE.COM');
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: 'user-1',
+        email: 'alice@example.com',
+      }),
+    );
+  });
+
   it('should return undefined when a user does not exist', () => {
     const result = repository.findById('does-not-exist');
 

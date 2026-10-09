@@ -139,6 +139,28 @@ describe('UsersService', () => {
     expect(usersRepositoryMock.create).not.toHaveBeenCalled();
   });
 
+  it('should reject registration when the email differs only by casing', async () => {
+    usersRepositoryMock.findByEmail.mockReturnValue({
+      id: 'user-1',
+      name: 'Alice Johnson',
+      email: 'alice@example.com',
+      passwordHash: 'hashed-password-1',
+      role: UserRole.CUSTOMER,
+    });
+
+    const createUserDto: CreateUserDto = {
+      name: 'Another Alice',
+      email: 'Alice@Example.com',
+      password: 'secret123',
+    };
+
+    await expect(service.create(createUserDto)).rejects.toThrow(
+      ConflictException,
+    );
+    expect(passwordHashingServiceMock.hash).not.toHaveBeenCalled();
+    expect(usersRepositoryMock.create).not.toHaveBeenCalled();
+  });
+
   it('should hash the supplied password', async () => {
     const createUserDto: CreateUserDto = {
       name: 'David Jones',

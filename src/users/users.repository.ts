@@ -36,7 +36,9 @@ export class UsersRepository {
   }
 
   findByEmail(email: string) {
-    return this.users.find((u) => u.email === email);
+    const normalizedEmail = email.toLowerCase();
+
+    return this.users.find((u) => u.email.toLowerCase() === normalizedEmail);
   }
 
   create(user: User): User {

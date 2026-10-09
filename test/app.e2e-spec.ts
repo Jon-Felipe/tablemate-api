@@ -223,4 +223,19 @@ describe('API (e2e)', () => {
         expect(response.body.message).toBe('Email is already registered');
       });
   });
+
+  it('POST /api/v1/users should reject an email with different casing', () => {
+    return request(app.getHttpServer())
+      .post('/api/v1/users')
+      .send({
+        name: 'Another Alice',
+        email: 'Alice@Example.com',
+        password: 'secret123',
+      })
+      .expect(409)
+      .expect((response) => {
+        expect(response.body.statusCode).toBe(409);
+        expect(response.body.message).toBe('Email is already registered');
+      });
+  });
 });
