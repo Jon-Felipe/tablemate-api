@@ -4,6 +4,7 @@ import { UsersRepository } from './users.repository.js';
 import { NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { User, UserRole } from './entities/user.entity.js';
+import { PasswordHashingService } from './password-hashing.service.js';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -12,6 +13,10 @@ describe('UsersService', () => {
     findAll: vi.fn(),
     findById: vi.fn(),
     create: vi.fn(),
+  };
+
+  const passwordHashingServiceMock = {
+    hash: vi.fn().mockResolvedValue('test-argon2-hash'),
   };
 
   beforeEach(async () => {
@@ -23,6 +28,10 @@ describe('UsersService', () => {
         {
           provide: UsersRepository,
           useValue: usersRepositoryMock,
+        },
+        {
+          provide: PasswordHashingService,
+          useValue: passwordHashingServiceMock,
         },
       ],
     }).compile();
@@ -76,7 +85,7 @@ describe('UsersService', () => {
     }).toThrow(NotFoundException);
   });
 
-  it('should create a user', () => {
+  it('should create a user', async () => {
     const createUserDto: CreateUserDto = {
       name: 'David Jones',
       email: 'david@example.com',
@@ -87,22 +96,59 @@ describe('UsersService', () => {
       id: 'user-4',
       name: 'David Jones',
       email: 'david@example.com',
-      passwordHash: 'temporary-secret123',
+      passwordHash: 'test-argon2-hash',
       role: UserRole.CUSTOMER,
     };
 
     usersRepositoryMock.create.mockReturnValue(createdUser);
 
-    const result = service.create(createUserDto);
+    const result = await service.create(createUserDto);
 
     expect(usersRepositoryMock.create).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'David Jones',
         email: 'david@example.com',
-        passwordHash: 'temporary-secret123',
+        passwordHash: 'test-argon2-hash',
         role: UserRole.CUSTOMER,
       }),
     );
     expect(result).toEqual(createdUser);
+  });
+
+  it('should hash the supplied password', async () => {
+    const createUserDto: CreateUserDto = {
+      name: 'David Jones',
+      email: 'david@example.com',
+      password: 'secret123',
+    };
+
+    usersRepositoryMock.create.mockImplementation((user) => user);
+
+    await service.create(createUserDto);
+
+    expect(passwordHashingServiceMock.hash).toHaveBeenCalledWith(
+      createUserDto.password,
+    );
+  });
+
+  it('should pass the password hash to the repository', async () => {
+    const createUserDto: CreateUserDto = {
+      name: 'David Jones',
+      email: 'david@example.com',
+      password: 'secret123',
+    };
+
+    usersRepositoryMock.create.mockImplementation((user) => user);
+
+    await service.create(createUserDto);
+
+    expect(usersRepositoryMock.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: createUserDto.name,
+        email: createUserDto.email,
+        passwordHash: 'test-argon2-hash',
+        role: UserRole.CUSTOMER,
+      }),
+    );
   });
 });
