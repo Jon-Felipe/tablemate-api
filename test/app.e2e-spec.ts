@@ -184,4 +184,28 @@ describe('API (e2e)', () => {
       .get('/api/v1/users/does-not-exist')
       .expect(404);
   });
+
+  it('POST /api/v1/users should create a user', () => {
+    return request(app.getHttpServer())
+      .post('/api/v1/users')
+      .send({
+        name: 'David Jones',
+        email: 'david@example.com',
+        password: 'secret123',
+      })
+      .expect(201)
+      .expect((response) => {
+        expect(response.body.statusCode).toBe(201);
+        expect(response.body.message).toBe('User created successfully');
+        expect(response.body.data).toEqual(
+          expect.objectContaining({
+            name: 'David Jones',
+            email: 'david@example.com',
+            role: 'CUSTOMER',
+          }),
+        );
+        expect(response.body.data.id).toBeDefined();
+        expect(response.body.data.passwordHash).toBeUndefined();
+      });
+  });
 });
