@@ -30,7 +30,7 @@ export class UsersService {
   async create(createUserDto: CreateUserDto): Promise<User> {
     const email = createUserDto.email.trim().toLowerCase();
 
-    const existingUser = this.usersRepository.findByEmail(createUserDto.email);
+    const existingUser = this.usersRepository.findByEmail(email);
 
     if (existingUser)
       throw new ConflictException('Email is already registered');
