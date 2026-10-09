@@ -28,6 +28,8 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
+    const email = createUserDto.email.trim().toLowerCase();
+
     const existingUser = this.usersRepository.findByEmail(createUserDto.email);
 
     if (existingUser)
@@ -40,7 +42,7 @@ export class UsersService {
     const user: User = {
       id: crypto.randomUUID(),
       name: createUserDto.name,
-      email: createUserDto.email.trim().toLowerCase(),
+      email,
       passwordHash,
       role: UserRole.CUSTOMER,
     };
