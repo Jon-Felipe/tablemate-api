@@ -208,4 +208,19 @@ describe('API (e2e)', () => {
         expect(response.body.data.passwordHash).toBeUndefined();
       });
   });
+
+  it('POST /api/v1/users should reject a duplicate email', () => {
+    return request(app.getHttpServer())
+      .post('/api/v1/users')
+      .send({
+        name: 'Another Alice',
+        email: 'alice@example.com',
+        password: 'secret123',
+      })
+      .expect(409)
+      .expect((response) => {
+        expect(response.body.statusCode).toBe(409);
+        expect(response.body.message).toBe('Email is already registered');
+      });
+  });
 });

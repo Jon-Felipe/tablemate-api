@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service.js';
 import { UsersRepository } from './users.repository.js';
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { User, UserRole } from './entities/user.entity.js';
 import { PasswordHashingService } from './password-hashing.service.js';
@@ -12,6 +12,7 @@ describe('UsersService', () => {
   const usersRepositoryMock = {
     findAll: vi.fn(),
     findById: vi.fn(),
+    findByEmail: vi.fn(),
     create: vi.fn(),
   };
 
@@ -100,6 +101,7 @@ describe('UsersService', () => {
       role: UserRole.CUSTOMER,
     };
 
+    usersRepositoryMock.findByEmail.mockReturnValue(undefined);
     usersRepositoryMock.create.mockReturnValue(createdUser);
 
     const result = await service.create(createUserDto);
@@ -115,6 +117,28 @@ describe('UsersService', () => {
     expect(result).toEqual(createdUser);
   });
 
+  it('should throw ConflictException when the email is already registered', async () => {
+    usersRepositoryMock.findByEmail.mockReturnValue({
+      id: 'user-1',
+      name: 'Alice Johnson',
+      email: 'alice@example.com',
+      passwordHash: 'hashed-password-1',
+      role: UserRole.CUSTOMER,
+    });
+
+    const createUserDto: CreateUserDto = {
+      name: 'Another Alice',
+      email: 'alice@example.com',
+      password: 'secret123',
+    };
+
+    await expect(service.create(createUserDto)).rejects.toThrow(
+      ConflictException,
+    );
+    expect(passwordHashingServiceMock.hash).not.toHaveBeenCalled();
+    expect(usersRepositoryMock.create).not.toHaveBeenCalled();
+  });
+
   it('should hash the supplied password', async () => {
     const createUserDto: CreateUserDto = {
       name: 'David Jones',
@@ -122,6 +146,7 @@ describe('UsersService', () => {
       password: 'secret123',
     };
 
+    usersRepositoryMock.findByEmail.mockReturnValue(undefined);
     usersRepositoryMock.create.mockImplementation((user) => user);
 
     await service.create(createUserDto);
@@ -138,6 +163,7 @@ describe('UsersService', () => {
       password: 'secret123',
     };
 
+    usersRepositoryMock.findByEmail.mockReturnValue(undefined);
     usersRepositoryMock.create.mockImplementation((user) => user);
 
     await service.create(createUserDto);

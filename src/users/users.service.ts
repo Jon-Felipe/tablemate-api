@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UsersRepository } from './users.repository.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { User, UserRole } from './entities/user.entity.js';
@@ -24,6 +28,11 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
+    const existingUser = this.usersRepository.findByEmail(createUserDto.email);
+
+    if (existingUser)
+      throw new ConflictException('Email is already registered');
+
     const passwordHash = await this.passwordHashingService.hash(
       createUserDto.password,
     );
