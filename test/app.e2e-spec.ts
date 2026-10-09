@@ -209,6 +209,25 @@ describe('API (e2e)', () => {
       });
   });
 
+  it('POST /api/v1/users should assign CUSTOMER when the client supplies ADMIN role', () => {
+    return request(app.getHttpServer())
+      .post('/api/v1/users')
+      .send({
+        name: 'David Jones',
+        email: 'david@example.com',
+        password: 'aSecurePassword123',
+        role: 'ADMIN',
+      })
+      .expect(201)
+      .expect((response) => {
+        expect(response.body.statusCode).toBe(201);
+        expect(response.body.message).toBe('User created successfully');
+        expect(response.body.data.role).toBe('CUSTOMER');
+        expect(response.body.data.id).toBeDefined();
+        expect(response.body.data.passwordHash).toBeUndefined();
+      });
+  });
+
   it('POST /api/v1/users should reject an invalid email', () => {
     return request(app.getHttpServer())
       .post('/api/v1/users')
