@@ -39,6 +39,23 @@ describe('UsersRepository', () => {
     );
   });
 
+  it('should return a user when the email exists', () => {
+    const result = repository.findByEmail('alice@example.com');
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: 'user-1',
+        email: 'alice@example.com',
+      }),
+    );
+  });
+
+  it('should return undefined when the email does not exist', () => {
+    const result = repository.findByEmail('unknown@example.com');
+
+    expect(result).toBeUndefined();
+  });
+
   it('should return undefined when a user does not exist', () => {
     const result = repository.findById('does-not-exist');
 
