@@ -1,6 +1,15 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { UsersService } from './users.service.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
+import { LoginDto } from './dto/login.dto.js';
 
 @Controller('users')
 export class UsersController {
@@ -41,6 +50,20 @@ export class UsersController {
     return {
       statusCode: 201,
       message: 'User created successfully',
+      data: safeUser,
+    };
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() loginDto: LoginDto) {
+    const user = await this.usersService.login(loginDto);
+
+    const { passwordHash, ...safeUser } = user;
+
+    return {
+      statusCode: 200,
+      message: 'Login successful',
       data: safeUser,
     };
   }

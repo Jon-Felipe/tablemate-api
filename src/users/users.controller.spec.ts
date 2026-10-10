@@ -3,6 +3,7 @@ import { UsersController } from './users.controller.js';
 import { UsersService } from './users.service.js';
 import { User, UserRole } from './entities/user.entity.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
+import { LoginDto } from './dto/login.dto.js';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -11,6 +12,7 @@ describe('UsersController', () => {
     findAll: vi.fn(),
     findById: vi.fn(),
     create: vi.fn(),
+    login: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -121,6 +123,37 @@ describe('UsersController', () => {
         id: 'user-4',
         name: 'David Jones',
         email: 'david@example.com',
+        role: UserRole.CUSTOMER,
+      },
+    });
+  });
+
+  it('should log in a user without returning the password hash', async () => {
+    const loginDto: LoginDto = {
+      email: 'alice@example.com',
+      password: 'mySecretPassword123',
+    };
+
+    const user: User = {
+      id: 'user-1',
+      name: 'Alice Johnson',
+      email: 'alice@example.com',
+      passwordHash: 'test-argon2-hash',
+      role: UserRole.CUSTOMER,
+    };
+
+    usersServiceMock.login.mockResolvedValue(user);
+
+    const result = await controller.login(loginDto);
+
+    expect(usersServiceMock.login).toHaveBeenCalledWith(loginDto);
+    expect(result).toEqual({
+      statusCode: 200,
+      message: 'Login successful',
+      data: {
+        id: 'user-1',
+        name: 'Alice Johnson',
+        email: 'alice@example.com',
         role: UserRole.CUSTOMER,
       },
     });
