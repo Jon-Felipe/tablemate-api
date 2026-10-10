@@ -19,7 +19,9 @@ export class UsersController {
   findAll() {
     const users = this.usersService.findAll();
 
-    const safeUsers = users.map(({ passwordHash, ...user }) => user);
+    const safeUsers = users.map(
+      ({ passwordHash: _passwordHash, ...user }) => user,
+    );
 
     return {
       statusCode: 200,
@@ -32,7 +34,7 @@ export class UsersController {
   findById(@Param('id') id: string) {
     const user = this.usersService.findById(id);
 
-    const { passwordHash, ...safeUser } = user;
+    const { passwordHash: _passwordHash, ...safeUser } = user;
 
     return {
       statusCode: 200,
@@ -45,7 +47,7 @@ export class UsersController {
   async create(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
 
-    const { passwordHash, ...safeUser } = user;
+    const { passwordHash: _passwordHash, ...safeUser } = user;
 
     return {
       statusCode: 201,
@@ -59,7 +61,7 @@ export class UsersController {
   async login(@Body() loginDto: LoginDto) {
     const user = await this.usersService.login(loginDto);
 
-    const { passwordHash, ...safeUser } = user;
+    const { passwordHash: _passwordHash, ...safeUser } = user;
 
     return {
       statusCode: 200,
