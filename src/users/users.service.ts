@@ -2,11 +2,13 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UsersRepository } from './users.repository.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { User, UserRole } from './entities/user.entity.js';
 import { PasswordHashingService } from './password-hashing.service.js';
+import { LoginDto } from './dto/login.dto.js';
 
 @Injectable()
 export class UsersService {
@@ -48,5 +50,23 @@ export class UsersService {
     };
 
     return this.usersRepository.create(user);
+  }
+
+  async login(loginDto: LoginDto): Promise<User> {
+    const email = loginDto.email.trim().toLowerCase();
+
+    const user = this.usersRepository.findByEmail(email);
+
+    if (!user) throw new UnauthorizedException('Invalid email or password');
+
+    const isPasswordValid = await this.passwordHashingService.verify(
+      loginDto.password,
+      user.passwordHash,
+    );
+
+    if (!isPasswordValid)
+      throw new UnauthorizedException('Invalid email or password');
+
+    return user;
   }
 }

@@ -1,10 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service.js';
 import { UsersRepository } from './users.repository.js';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { User, UserRole } from './entities/user.entity.js';
 import { PasswordHashingService } from './password-hashing.service.js';
+import { LoginDto } from './dto/login.dto.js';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -18,12 +23,14 @@ describe('UsersService', () => {
 
   const passwordHashingServiceMock = {
     hash: vi.fn().mockResolvedValue('test-argon2-hash'),
+    verify: vi.fn(),
   };
 
   beforeEach(async () => {
     vi.clearAllMocks();
 
     passwordHashingServiceMock.hash.mockResolvedValue('test-argon2-hash');
+    passwordHashingServiceMock.verify.mockResolvedValue(true);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -238,6 +245,71 @@ describe('UsersService', () => {
         passwordHash: 'test-argon2-hash',
         role: UserRole.CUSTOMER,
       }),
+    );
+  });
+
+  it('should return the user when credentials are valid', async () => {
+    const loginDto: LoginDto = {
+      email: 'alice@example.com',
+      password: 'mySecretPassword123',
+    };
+
+    const user = {
+      id: 'user-1',
+      name: 'Alice Johnson',
+      email: 'alice@example.com',
+      passwordHash: 'test-argon2-hash',
+      role: UserRole.CUSTOMER,
+    };
+
+    usersRepositoryMock.findByEmail.mockReturnValue(user);
+    passwordHashingServiceMock.verify.mockResolvedValue(true);
+
+    const result = await service.login(loginDto);
+
+    expect(result).toEqual(user);
+    expect(usersRepositoryMock.findByEmail).toHaveBeenCalledWith(
+      'alice@example.com',
+    );
+    expect(passwordHashingServiceMock.verify).toHaveBeenCalledWith(
+      loginDto.password,
+      user.passwordHash,
+    );
+  });
+
+  it('should reject login when the email does not exist', async () => {
+    const loginDto: LoginDto = {
+      email: 'unknown@example.com',
+      password: 'mySecretPassword123',
+    };
+
+    usersRepositoryMock.findByEmail.mockReturnValue(undefined);
+
+    await expect(service.login(loginDto)).rejects.toThrow(
+      new UnauthorizedException('Invalid email or password'),
+    );
+    expect(passwordHashingServiceMock.verify).not.toHaveBeenCalled();
+  });
+
+  it('should reject login when the password is incorrect', async () => {
+    const loginDto: LoginDto = {
+      email: 'alice@example.com',
+      password: 'incorrectPassword123',
+    };
+
+    const user = {
+      id: 'user-1',
+      name: 'Alice Johnson',
+      email: 'alice@example.com',
+      passwordHash: 'test-argon2-hash',
+      role: UserRole.CUSTOMER,
+    };
+
+    usersRepositoryMock.findByEmail.mockReturnValue(user);
+    passwordHashingServiceMock.verify.mockResolvedValue(false);
+
+    await expect(service.login(loginDto)).rejects.toThrow(
+      new UnauthorizedException('Invalid email or password'),
     );
   });
 });
