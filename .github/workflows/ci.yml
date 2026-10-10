@@ -8,6 +8,8 @@ jobs:
   validate:
     name: Validate API
     runs-on: ubuntu-latest
+    env:
+      JWT_SECRET: 'tablemate-ci-only-test-secret-not-for-production'
 
     steps:
       - name: Check out repository
