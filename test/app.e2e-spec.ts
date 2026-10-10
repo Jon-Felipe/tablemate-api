@@ -279,4 +279,99 @@ describe('API (e2e)', () => {
       })
       .expect(400);
   });
+
+  it('POST /api/v1/users/login should log in a registered user without exposing the password hash', async () => {
+    const password = 'aSecurePassword123';
+
+    await request(app.getHttpServer())
+      .post('/api/v1/users')
+      .send({
+        name: 'Login Test User',
+        email: 'login-test@example.com',
+        password,
+      })
+      .expect(201);
+
+    return request(app.getHttpServer())
+      .post('/api/v1/users/login')
+      .send({
+        email: 'login-test@example.com',
+        password,
+      })
+      .expect((response) => {
+        expect(response.body.statusCode).toBe(200);
+        expect(response.body.message).toBe('Login successful');
+        expect(response.body.data).toEqual(
+          expect.objectContaining({
+            name: 'Login Test User',
+            email: 'login-test@example.com',
+            role: 'CUSTOMER',
+          }),
+        );
+        expect(response.body.data.id).toBeDefined();
+        expect(response.body.data.passwordHash).toBeUndefined();
+      });
+  });
+
+  it('POST /api/v1/users/login should reject an invalid email', async () => {
+    return request(app.getHttpServer())
+      .post('/api/v1/users/login')
+      .send({
+        email: 'not-an-email',
+        password: 'aSecurePassword123',
+      })
+      .expect(400);
+  });
+
+  it('POST /api/v1/users/login should reject missing credentials', async () => {
+    return request(app.getHttpServer())
+      .post('/api/v1/users/login')
+      .send({})
+      .expect(400);
+  });
+
+  it('POST /api/v1/users/login should reject an empty password', async () => {
+    return request(app.getHttpServer())
+      .post('/api/v1/users/login')
+      .send({
+        email: 'alice@example.com',
+        password: '',
+      })
+      .expect(400);
+  });
+
+  it('POST /api/v1/users/login should reject an unknown email', async () => {
+    return request(app.getHttpServer())
+      .post('/api/v1/users/login')
+      .send({
+        email: 'unknown@example.com',
+        password: 'aSecurePassword123',
+      })
+      .expect(401)
+      .expect((response) => {
+        expect(response.body.message).toBe('Invalid email or password');
+      });
+  });
+
+  it('POST /api/v1/users/login should reject an incorrect password', async () => {
+    await request(app.getHttpServer())
+      .post('/api/v1/users')
+      .send({
+        name: 'Wrong Password User',
+        email: 'wrong-password@example.com',
+        password: 'aSecurePassword123',
+      })
+      .expect(201);
+
+    return request(app.getHttpServer())
+      .post('/api/v1/users/login')
+      .send({
+        email: 'wrong-password@example.com',
+        password: 'aDifferentPassword123',
+      })
+      .expect(401)
+      .expect((response) => {
+        expect(response.body.message).toBe('Invalid email or password');
+      });
+  });
 });
