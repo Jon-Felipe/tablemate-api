@@ -142,7 +142,10 @@ describe('UsersController', () => {
       role: UserRole.CUSTOMER,
     };
 
-    usersServiceMock.login.mockResolvedValue(user);
+    usersServiceMock.login.mockResolvedValue({
+      user,
+      accessToken: 'test-access-token',
+    });
 
     const result = await controller.login(loginDto);
 
@@ -151,10 +154,13 @@ describe('UsersController', () => {
       statusCode: 200,
       message: 'Login successful',
       data: {
-        id: 'user-1',
-        name: 'Alice Johnson',
-        email: 'alice@example.com',
-        role: UserRole.CUSTOMER,
+        user: {
+          id: 'user-1',
+          name: 'Alice Johnson',
+          email: 'alice@example.com',
+          role: UserRole.CUSTOMER,
+        },
+        accessToken: 'test-access-token',
       },
     });
   });

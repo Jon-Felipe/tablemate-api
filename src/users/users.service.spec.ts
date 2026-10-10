@@ -10,6 +10,7 @@ import { CreateUserDto } from './dto/create-user.dto.js';
 import { User, UserRole } from './entities/user.entity.js';
 import { PasswordHashingService } from './password-hashing.service.js';
 import { LoginDto } from './dto/login.dto.js';
+import { JwtService } from '@nestjs/jwt';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -24,6 +25,10 @@ describe('UsersService', () => {
   const passwordHashingServiceMock = {
     hash: vi.fn().mockResolvedValue('test-argon2-hash'),
     verify: vi.fn(),
+  };
+
+  const jwtServiceMock = {
+    signAsync: vi.fn().mockResolvedValue('test-access-token'),
   };
 
   beforeEach(async () => {
@@ -42,6 +47,10 @@ describe('UsersService', () => {
         {
           provide: PasswordHashingService,
           useValue: passwordHashingServiceMock,
+        },
+        {
+          provide: JwtService,
+          useValue: jwtServiceMock,
         },
       ],
     }).compile();
@@ -267,7 +276,7 @@ describe('UsersService', () => {
 
     const result = await service.login(loginDto);
 
-    expect(result).toEqual(user);
+    expect(result).toEqual({ user, accessToken: 'test-access-token' });
     expect(usersRepositoryMock.findByEmail).toHaveBeenCalledWith(
       'alice@example.com',
     );
@@ -275,6 +284,10 @@ describe('UsersService', () => {
       loginDto.password,
       user.passwordHash,
     );
+    expect(jwtServiceMock.signAsync).toHaveBeenCalledWith({
+      sub: user.id,
+      role: user.role,
+    });
   });
 
   it('should reject login when the email does not exist', async () => {

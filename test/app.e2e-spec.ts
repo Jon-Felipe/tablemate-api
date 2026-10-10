@@ -303,13 +303,16 @@ describe('API (e2e)', () => {
         expect(response.body.message).toBe('Login successful');
         expect(response.body.data).toEqual(
           expect.objectContaining({
-            name: 'Login Test User',
-            email: 'login-test@example.com',
-            role: 'CUSTOMER',
+            user: {
+              id: expect.any(String),
+              name: 'Login Test User',
+              email: 'login-test@example.com',
+              role: 'CUSTOMER',
+            },
+            accessToken: expect.any(String),
           }),
         );
-        expect(response.body.data.id).toBeDefined();
-        expect(response.body.data.passwordHash).toBeUndefined();
+        expect(response.body.data.user).not.toHaveProperty('passwordHash');
       });
   });
 
