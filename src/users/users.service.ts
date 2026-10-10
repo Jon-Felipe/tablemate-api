@@ -9,12 +9,14 @@ import { CreateUserDto } from './dto/create-user.dto.js';
 import { User, UserRole } from './entities/user.entity.js';
 import { PasswordHashingService } from './password-hashing.service.js';
 import { LoginDto } from './dto/login.dto.js';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly passwordHashingService: PasswordHashingService,
+    private readonly jwtService: JwtService,
   ) {}
 
   findAll() {
@@ -52,7 +54,9 @@ export class UsersService {
     return this.usersRepository.create(user);
   }
 
-  async login(loginDto: LoginDto): Promise<User> {
+  async login(
+    loginDto: LoginDto,
+  ): Promise<{ user: User; accessToken: string }> {
     const email = loginDto.email.trim().toLowerCase();
 
     const user = this.usersRepository.findByEmail(email);
@@ -67,6 +71,11 @@ export class UsersService {
     if (!isPasswordValid)
       throw new UnauthorizedException('Invalid email or password');
 
-    return user;
+    const accessToken = await this.jwtService.signAsync({
+      sub: user.id,
+      role: user.role,
+    });
+
+    return { user, accessToken };
   }
 }

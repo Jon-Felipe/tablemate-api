@@ -59,14 +59,14 @@ export class UsersController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
-    const user = await this.usersService.login(loginDto);
+    const { user, accessToken } = await this.usersService.login(loginDto);
 
     const { passwordHash: _passwordHash, ...safeUser } = user;
 
     return {
       statusCode: 200,
       message: 'Login successful',
-      data: safeUser,
+      data: { user: safeUser, accessToken },
     };
   }
 }
