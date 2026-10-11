@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module.js';
+import { JwtService } from '@nestjs/jwt';
 
 describe('API (e2e)', () => {
   let app: INestApplication;
@@ -298,7 +299,7 @@ describe('API (e2e)', () => {
         email: 'login-test@example.com',
         password,
       })
-      .expect((response) => {
+      .expect(async (response) => {
         expect(response.body.statusCode).toBe(200);
         expect(response.body.message).toBe('Login successful');
         expect(response.body.data).toEqual(
@@ -313,6 +314,21 @@ describe('API (e2e)', () => {
           }),
         );
         expect(response.body.data.user).not.toHaveProperty('passwordHash');
+
+        const jwtService = app.get(JwtService);
+
+        const payload = await jwtService.verifyAsync<{
+          sub: string;
+          role: string;
+          iat: number;
+          exp: number;
+        }>(response.body.data.accessToken);
+
+        expect(payload.sub).toBe(response.body.data.user.id);
+        expect(payload.role).toBe('CUSTOMER');
+        expect(payload.iat).toBeDefined();
+        expect(payload.exp).toBeDefined();
+        expect(payload.exp).toBeGreaterThan(Math.floor(Date.now() / 1000));
       });
   });
 
