@@ -6,10 +6,12 @@ import {
   HttpStatus,
   Param,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { LoginDto } from './dto/login.dto.js';
+import { JwtAuthGaurd } from './jwt-auth.guard.js';
 
 @Controller('users')
 export class UsersController {
@@ -30,6 +32,7 @@ export class UsersController {
     };
   }
 
+  @UseGuards(JwtAuthGaurd)
   @Get(':id')
   findById(@Param('id') id: string) {
     const user = this.usersService.findById(id);

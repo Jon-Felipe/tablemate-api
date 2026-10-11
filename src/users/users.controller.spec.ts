@@ -4,6 +4,7 @@ import { UsersService } from './users.service.js';
 import { User, UserRole } from './entities/user.entity.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { LoginDto } from './dto/login.dto.js';
+import { JwtAuthGaurd } from './jwt-auth.guard.js';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -21,7 +22,10 @@ describe('UsersController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
       providers: [{ provide: UsersService, useValue: usersServiceMock }],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGaurd)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<UsersController>(UsersController);
   });

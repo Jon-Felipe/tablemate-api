@@ -161,18 +161,39 @@ describe('API (e2e)', () => {
       });
   });
 
-  it('GET /api/v1/users/:id should return a user', () => {
-    return request(app.getHttpServer())
-      .get('/api/v1/users/user-1')
+  it('GET /api/v1/users/:id should return a user with a valid access token', async () => {
+    const password = 'aSecurePassword123';
+
+    await request(app.getHttpServer())
+      .post('/api/v1/users')
+      .send({
+        name: 'Authenticated Test User',
+        email: 'authenticated-test@example.com',
+        password,
+      })
+      .expect(201);
+
+    const loginResponse = await request(app.getHttpServer())
+      .post('/api/v1/users/login')
+      .send({
+        email: 'authenticated-test@example.com',
+        password,
+      })
+      .expect(200);
+
+    const accessToken = loginResponse.body.data.accessToken as string;
+
+    await request(app.getHttpServer())
+      .get(`/api/v1/users/${loginResponse.body.data.user.id}`)
+      .set('Authorization', `Bearer ${accessToken}`)
       .expect(200)
       .expect((response) => {
         expect(response.body.statusCode).toBe(200);
         expect(response.body.message).toBe('User retrieved successfully');
         expect(response.body.data).toEqual(
           expect.objectContaining({
-            id: 'user-1',
-            name: 'Alice Johnson',
-            email: 'alice@example.com',
+            name: 'Authenticated Test User',
+            email: 'authenticated-test@example.com',
             role: 'CUSTOMER',
           }),
         );
@@ -180,10 +201,36 @@ describe('API (e2e)', () => {
       });
   });
 
-  it('GET /api/v1/users/:id should return 404 for a missing user', () => {
+  it('GET /api/v1/users/:id should return 404 for a missing user', async () => {
+    const password = 'aSecurePassword123';
+
+    await request(app.getHttpServer())
+      .post('/api/v1/users')
+      .send({
+        name: 'Authenticated Test User',
+        email: 'missing=user-test@example.com',
+        password,
+      })
+      .expect(201);
+
+    const loginResponse = await request(app.getHttpServer())
+      .post('/api/v1/users/login')
+      .send({
+        email: 'missing=user-test@example.com',
+        password,
+      })
+      .expect(200);
+
+    const accessToken = loginResponse.body.data.accessToken as string;
+
     return request(app.getHttpServer())
       .get('/api/v1/users/does-not-exist')
+      .set('Authorization', `Bearer ${accessToken}`)
       .expect(404);
+  });
+
+  it('GET /api/v1/users/:id should return 401 without an access token', () => {
+    return request(app.getHttpServer()).get('/api/v1/users/user-1').expect(401);
   });
 
   it('POST /api/v1/users should create a user', () => {
