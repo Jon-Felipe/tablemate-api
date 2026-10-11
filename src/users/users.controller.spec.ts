@@ -4,7 +4,7 @@ import { UsersService } from './users.service.js';
 import { User, UserRole } from './entities/user.entity.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { LoginDto } from './dto/login.dto.js';
-import { JwtAuthGaurd } from './jwt-auth.guard.js';
+import { JwtAuthGuard } from './jwt-auth.guard.js';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -23,7 +23,7 @@ describe('UsersController', () => {
       controllers: [UsersController],
       providers: [{ provide: UsersService, useValue: usersServiceMock }],
     })
-      .overrideGuard(JwtAuthGaurd)
+      .overrideGuard(JwtAuthGuard)
       .useValue({ canActivate: () => true })
       .compile();
 
@@ -73,6 +73,37 @@ describe('UsersController', () => {
           role: UserRole.STAFF,
         },
       ],
+    });
+  });
+
+  it('should return the current user without the password hash', () => {
+    const user: User = {
+      id: 'user-1',
+      name: 'Alice Johnson',
+      email: 'alice@example.com',
+      passwordHash: 'hashed-password-1',
+      role: UserRole.CUSTOMER,
+    };
+    usersServiceMock.findById.mockReturnValue(user);
+
+    const request = {
+      user: {
+        sub: 'user-1',
+        role: 'CUSTOMER',
+      },
+    };
+
+    const result = controller.findMe(request as any);
+    expect(usersServiceMock.findById).toHaveBeenCalledWith('user-1');
+    expect(result).toEqual({
+      statusCode: 200,
+      message: 'Current user retrieved successfully',
+      data: {
+        id: 'user-1',
+        name: 'Alice Johnson',
+        email: 'alice@example.com',
+        role: UserRole.CUSTOMER,
+      },
     });
   });
 

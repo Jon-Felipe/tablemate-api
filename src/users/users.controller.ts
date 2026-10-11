@@ -6,12 +6,14 @@ import {
   HttpStatus,
   Param,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { LoginDto } from './dto/login.dto.js';
-import { JwtAuthGaurd } from './jwt-auth.guard.js';
+import { JwtAuthGuard } from './jwt-auth.guard.js';
+import type { AuthenticatedRequest } from './types/authenticated-request.js';
 
 @Controller('users')
 export class UsersController {
@@ -32,7 +34,21 @@ export class UsersController {
     };
   }
 
-  @UseGuards(JwtAuthGaurd)
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  findMe(@Req() request: AuthenticatedRequest) {
+    const user = this.usersService.findById(request.user.sub);
+
+    const { passwordHash: _passwordHash, ...safeUser } = user;
+
+    return {
+      statusCode: 200,
+      message: 'Current user retrieved successfully',
+      data: safeUser,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findById(@Param('id') id: string) {
     const user = this.usersService.findById(id);
