@@ -161,6 +161,57 @@ describe('API (e2e)', () => {
       });
   });
 
+  it('GET /api/v1/users/me should return the current user without a password hash', async () => {
+    const password = 'aSecurePassword123';
+
+    await request(app.getHttpServer())
+      .post('/api/v1/users')
+      .send({
+        name: 'Current Test User',
+        email: 'current-user-test@example.com',
+        password,
+      })
+      .expect(201);
+
+    const loginResponse = await request(app.getHttpServer())
+      .post('/api/v1/users/login')
+      .send({
+        email: 'current-user-test@example.com',
+        password,
+      })
+      .expect(200);
+
+    const accessToken = loginResponse.body.data.accessToken as string;
+    const userId = loginResponse.body.data.user.id as string;
+
+    await request(app.getHttpServer())
+      .get(`/api/v1/users/${loginResponse.body.data.user.id}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.statusCode).toBe(200);
+        expect(response.body.message).toBe('User retrieved successfully');
+        expect(response.body.data).toEqual({
+          id: userId,
+          name: 'Current Test User',
+          email: 'current-user-test@example.com',
+          role: 'CUSTOMER',
+        });
+        expect(response.body.data).not.toHaveProperty('passwordHash');
+      });
+  });
+
+  it('GET /api/v1/users/me should return 401 without an access token', () => {
+    return request(app.getHttpServer()).get('/api/v1/users/me').expect(401);
+  });
+
+  it('GET /api/v1/users/me should return 401 with an invalid access token', () => {
+    return request(app.getHttpServer())
+      .get('/api/v1/users/me')
+      .set('Authorization', 'Bearer invalid-token')
+      .expect(401);
+  });
+
   it('GET /api/v1/users/:id should return a user with a valid access token', async () => {
     const password = 'aSecurePassword123';
 
