@@ -5,6 +5,7 @@ import { UsersController } from './users.controller.js';
 import { PasswordHashingService } from './password-hashing.service.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtAuthGaurd } from './jwt-auth.guard.js';
 
 @Module({
   imports: [
@@ -21,7 +22,12 @@ import { JwtModule } from '@nestjs/jwt';
       }),
     }),
   ],
-  providers: [UsersRepository, UsersService, PasswordHashingService],
+  providers: [
+    UsersRepository,
+    UsersService,
+    PasswordHashingService,
+    JwtAuthGaurd,
+  ],
   controllers: [UsersController],
 })
 export class UsersModule {}
