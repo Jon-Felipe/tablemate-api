@@ -302,6 +302,7 @@ describe('UsersService', () => {
       new UnauthorizedException('Invalid email or password'),
     );
     expect(passwordHashingServiceMock.verify).not.toHaveBeenCalled();
+    expect(jwtServiceMock.signAsync).not.toHaveBeenCalled();
   });
 
   it('should reject login when the password is incorrect', async () => {
@@ -320,6 +321,8 @@ describe('UsersService', () => {
 
     usersRepositoryMock.findByEmail.mockReturnValue(user);
     passwordHashingServiceMock.verify.mockResolvedValue(false);
+
+    expect(jwtServiceMock.signAsync).not.toHaveBeenCalled();
 
     await expect(service.login(loginDto)).rejects.toThrow(
       new UnauthorizedException('Invalid email or password'),
