@@ -44,6 +44,8 @@ describe('API (e2e)', () => {
       .post('/api/v1/restaurants')
       .send({
         name: '',
+        imageUrl:
+          'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
         description: 'Authentic Italian cuisine',
         cuisine: 'Italian',
         address: '10 Church Street',
@@ -57,6 +59,8 @@ describe('API (e2e)', () => {
       .post('/api/v1/restaurants')
       .send({
         name: 'La Piazza',
+        imageUrl:
+          'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
         description: 'Authentic Italian cuisine',
         cuisine: 'Italian',
         address: '10 Church Street',
@@ -115,6 +119,8 @@ describe('API (e2e)', () => {
           expect.objectContaining({
             id: 'restaurant-1',
             name: 'The Golden Fork Updated',
+            imageUrl:
+              'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
             description: 'Modern European cuisine in a relaxed atmosphere.',
             cuisine: 'European',
           }),

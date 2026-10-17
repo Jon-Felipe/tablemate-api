@@ -9,6 +9,8 @@ export class RestaurantsRepository {
     {
       id: 'restaurant-1',
       name: 'The Golden Fork',
+      imageUrl:
+        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
       description: 'Modern European cuisine in a relaxed atmosphere.',
       cuisine: 'European',
       address: '12 Main Street',
@@ -18,6 +20,8 @@ export class RestaurantsRepository {
     {
       id: 'restaurant-2',
       name: 'Casa Verde',
+      imageUrl:
+        'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80',
       description: 'Fresh Italian dishes made with seasonal ingredients.',
       cuisine: 'Italian',
       address: '45 Oak Avenue',
@@ -27,6 +31,8 @@ export class RestaurantsRepository {
     {
       id: 'restaurant-3',
       name: 'Sakura House',
+      imageUrl:
+        'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1200&q=80',
       description: 'Traditional Japanese cuisine with a modern touch.',
       cuisine: 'Japanese',
       address: '8 Market Road',

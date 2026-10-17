@@ -1,9 +1,14 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsUrl } from 'class-validator';
 
 export class CreateRestaurantDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
+  imageUrl: string;
 
   @IsString()
   @IsNotEmpty()
