@@ -1,6 +1,7 @@
 export class Restaurant {
   id: string;
   name: string;
+  imageUrl: string;
   description: string;
   cuisine: string;
   address: string;
