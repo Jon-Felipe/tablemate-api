@@ -55,6 +55,8 @@ describe('RestaurantsRepository', () => {
   it('should create a restaurant', () => {
     const createRestaurantDto: CreateRestaurantDto = {
       name: 'La Piazza',
+      imageUrl:
+        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
       description: 'Authentic Italian cuisine.',
       cuisine: 'Italian',
       address: '10 Church Street',
