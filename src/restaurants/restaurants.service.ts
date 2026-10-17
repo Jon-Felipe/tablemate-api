@@ -1,11 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+
 import { RestaurantsRepository } from './restaurants.repository.js';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
+import { MenuRepository } from './menu.repository.js';
 
 @Injectable()
 export class RestaurantsService {
-  constructor(private readonly restaurantsRepository: RestaurantsRepository) {}
+  constructor(
+    private readonly restaurantsRepository: RestaurantsRepository,
+    private readonly menuRepository: MenuRepository,
+  ) {}
 
   findAll() {
     return this.restaurantsRepository.findAll();
@@ -41,5 +46,18 @@ export class RestaurantsService {
 
     if (!restaurant)
       throw new NotFoundException(`Restaurant with ID ${id} not found`);
+  }
+
+  findMenuByRestaurantId(restaurantId: string) {
+    this.findById(restaurantId);
+
+    const menu = this.menuRepository.findMenuByRestaurantId(restaurantId);
+
+    if (!menu)
+      throw new NotFoundException(
+        `Menu for restaurant ${restaurantId} not found`,
+      );
+
+    return menu;
   }
 }

@@ -4,6 +4,7 @@ import { RestaurantsService } from './restaurants.service.js';
 import { RestaurantsRepository } from './restaurants.repository.js';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
+import { MenuRepository } from './menu.repository.js';
 
 describe('RestaurantsService', () => {
   let service: RestaurantsService;
@@ -16,6 +17,10 @@ describe('RestaurantsService', () => {
     remove: vi.fn(),
   };
 
+  const menuRepositoryMock = {
+    findMenuByRestaurantId: vi.fn(),
+  };
+
   beforeEach(async () => {
     vi.clearAllMocks();
 
@@ -23,6 +28,7 @@ describe('RestaurantsService', () => {
       providers: [
         RestaurantsService,
         { provide: RestaurantsRepository, useValue: restaurantsRepositoryMock },
+        { provide: MenuRepository, useValue: menuRepositoryMock },
       ],
     }).compile();
 
@@ -147,5 +153,53 @@ describe('RestaurantsService', () => {
     expect(() => {
       service.update('does-not-exist', updateRestaurantDto);
     }).toThrow(NotFoundException);
+  });
+
+  it('should return a restaurant menu', () => {
+    const restaurant = { id: 'restaurant-1', name: 'The Golden Fork' };
+    const menu = {
+      restaurantId: 'restaurant-1',
+      categories: [
+        {
+          id: 'starters',
+          name: 'Starters',
+          items: [
+            {
+              id: 'gf-starter-1',
+              name: 'Roasted Tomato Soup',
+              description: 'Roasted tomatoes and fresh herbs.',
+              price: 65,
+              imageUrl: 'https://example.com/soup.jpg',
+            },
+          ],
+        },
+      ],
+    };
+
+    restaurantsRepositoryMock.findById.mockReturnValue(restaurant);
+    menuRepositoryMock.findMenuByRestaurantId.mockReturnValue(menu);
+
+    expect(service.findMenuByRestaurantId('restaurant-1')).toEqual(menu);
+    expect(menuRepositoryMock.findMenuByRestaurantId).toHaveBeenCalledWith(
+      'restaurant-1',
+    );
+  });
+
+  it('should throw NotFoundException when the restaurant has no menu', () => {
+    restaurantsRepositoryMock.findById.mockReturnValue({ id: 'restaurant-1' });
+    menuRepositoryMock.findMenuByRestaurantId.mockReturnValue(undefined);
+
+    expect(() => service.findMenuByRestaurantId('restaurant-1')).toThrow(
+      NotFoundException,
+    );
+  });
+
+  it('should throw NotFoundException when the restaurant does not exist', () => {
+    restaurantsRepositoryMock.findById.mockReturnValue(undefined);
+
+    expect(() => service.findMenuByRestaurantId('unknown-restaurant')).toThrow(
+      NotFoundException,
+    );
+    expect(menuRepositoryMock.findMenuByRestaurantId).not.toHaveBeenCalled();
   });
 });

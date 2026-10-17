@@ -27,6 +27,17 @@ export class RestaurantsController {
     };
   }
 
+  @Get(':id/menu')
+  findMenuByRestaurantId(@Param('id') id: string) {
+    const menu = this.restaurantsService.findMenuByRestaurantId(id);
+
+    return {
+      statusCode: 200,
+      message: 'Restaurant menu retrieved successfully',
+      data: menu,
+    };
+  }
+
   @Get(':id')
   findById(@Param('id') id: string) {
     const restaurant = this.restaurantsService.findById(id);
