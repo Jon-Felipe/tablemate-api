@@ -153,6 +153,30 @@ describe('API (e2e)', () => {
       .expect(404);
   });
 
+  it('GET /api/v1/restaurants/:id/menu should return a restaurant menu', () => {
+    return request(app.getHttpServer())
+      .get('/api/v1/restaurants/restaurant-1/menu')
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.statusCode).toBe(200);
+        expect(response.body.message).toBe(
+          'Restaurant menu retrieved successfully',
+        );
+        expect(response.body.data).toEqual(
+          expect.objectContaining({
+            restaurantId: 'restaurant-1',
+            categories: expect.any(Array),
+          }),
+        );
+      });
+  });
+
+  it('GET /api/v1/restaurants/:id/menu should return 404 for a missing restaurant', () => {
+    return request(app.getHttpServer())
+      .get('/api/v1/restaurants/does-not-exist/menu')
+      .expect(404);
+  });
+
   it('GET /api/v1/users should return all users without password hashes', () => {
     return request(app.getHttpServer())
       .get('/api/v1/users')
