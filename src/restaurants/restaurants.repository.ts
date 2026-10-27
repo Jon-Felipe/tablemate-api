@@ -8,6 +8,7 @@ export class RestaurantsRepository {
   private readonly restaurants: Restaurant[] = [
     {
       id: 'restaurant-1',
+      ownerId: 'user-2',
       name: 'The Golden Fork',
       imageUrl:
         'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
@@ -19,6 +20,7 @@ export class RestaurantsRepository {
     },
     {
       id: 'restaurant-2',
+      ownerId: 'user-2',
       name: 'Casa Verde',
       imageUrl:
         'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80',
@@ -30,6 +32,7 @@ export class RestaurantsRepository {
     },
     {
       id: 'restaurant-3',
+      ownerId: 'user-2',
       name: 'Sakura House',
       imageUrl:
         'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1200&q=80',
@@ -49,10 +52,14 @@ export class RestaurantsRepository {
     return this.restaurants.find((r) => r.id === id);
   }
 
-  create(createRestaurantDto: CreateRestaurantDto): Restaurant {
+  create(
+    createRestaurantDto: CreateRestaurantDto,
+    ownerId: string,
+  ): Restaurant {
     const restaurant: Restaurant = {
       id: `restaurant-${this.restaurants.length + 1}`,
       ...createRestaurantDto,
+      ownerId,
       rating: 0,
     };
 
