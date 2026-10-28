@@ -57,7 +57,7 @@ describe('API (e2e)', () => {
         expect(response.body.message).toBe(
           'Restaurants retrieved successfully',
         );
-        expect(response.body.data).toHaveLength(3);
+        expect(response.body.data).toHaveLength(10);
       });
   });
 
