@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 
 describe('API (e2e)', () => {
   let app: INestApplication;
+  let adminAccessToken: string;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -20,6 +21,12 @@ describe('API (e2e)', () => {
     );
 
     await app.init();
+
+    const jwtService = app.get(JwtService);
+    adminAccessToken = await jwtService.signAsync({
+      sub: 'e2e-admin-1',
+      role: 'ADMIN',
+    });
   });
 
   afterEach(async () => {
@@ -42,6 +49,7 @@ describe('API (e2e)', () => {
   it('POST /api/v1/restaurants should reject an invalid restaurant', () => {
     return request(app.getHttpServer())
       .post('/api/v1/restaurants')
+      .set('Authorization', `Bearer ${adminAccessToken}`)
       .send({
         name: '',
         imageUrl:
@@ -57,6 +65,7 @@ describe('API (e2e)', () => {
   it('POST /api/v1/restaurants should create a restaurant', () => {
     return request(app.getHttpServer())
       .post('/api/v1/restaurants')
+      .set('Authorization', `Bearer ${adminAccessToken}`)
       .send({
         name: 'La Piazza',
         imageUrl:
@@ -73,6 +82,7 @@ describe('API (e2e)', () => {
         expect(response.body.data).toEqual(
           expect.objectContaining({
             name: 'La Piazza',
+            ownerId: 'e2e-admin-1',
             description: 'Authentic Italian cuisine',
             cuisine: 'Italian',
             address: '10 Church Street',
@@ -108,6 +118,7 @@ describe('API (e2e)', () => {
   it('PATCH /api/v1/restaurants/:id should update a restaurant', () => {
     return request(app.getHttpServer())
       .patch('/api/v1/restaurants/restaurant-1')
+      .set('Authorization', `Bearer ${adminAccessToken}`)
       .send({
         name: 'The Golden Fork Updated',
       })
@@ -131,6 +142,7 @@ describe('API (e2e)', () => {
   it('PATCH /api/v1/restaurants/:id should return 404 for a missing restaurant', () => {
     return request(app.getHttpServer())
       .patch('/api/v1/restaurants/does-not-exist')
+      .set('Authorization', `Bearer ${adminAccessToken}`)
       .send({
         name: 'Updated Name',
       })
@@ -140,6 +152,7 @@ describe('API (e2e)', () => {
   it('DELETE /api/v1/restaurants/:id should remove a restaurant', async () => {
     await request(app.getHttpServer())
       .delete('/api/v1/restaurants/restaurant-1')
+      .set('Authorization', `Bearer ${adminAccessToken}`)
       .expect(204);
 
     await request(app.getHttpServer())
@@ -150,6 +163,7 @@ describe('API (e2e)', () => {
   it('DELETE /api/v1/restaurants/:id should return 404 for a missing restaurant', () => {
     return request(app.getHttpServer())
       .delete('/api/v1/restaurants/does-not-exist')
+      .set('Authorization', `Bearer ${adminAccessToken}`)
       .expect(404);
   });
 
