@@ -7,10 +7,14 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service.js';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
+import { JwtAuthGuard } from '../users/jwt-auth.guard.js';
+import type { AuthenticatedRequest } from '../users/types/authenticated-request.js';
 
 @Controller('restaurants')
 export class RestaurantsController {
@@ -49,9 +53,16 @@ export class RestaurantsController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createRestaurantDto: CreateRestaurantDto) {
-    const restaurant = this.restaurantsService.create(createRestaurantDto);
+  create(
+    @Body() createRestaurantDto: CreateRestaurantDto,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    const restaurant = this.restaurantsService.create(
+      createRestaurantDto,
+      request.user,
+    );
 
     return {
       statusCode: 201,
@@ -60,12 +71,18 @@ export class RestaurantsController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateRestaurantDto: UpdateRestaurantDto,
+    @Req() request: AuthenticatedRequest,
   ) {
-    const restaurant = this.restaurantsService.update(id, updateRestaurantDto);
+    const restaurant = this.restaurantsService.update(
+      id,
+      updateRestaurantDto,
+      request.user,
+    );
 
     return {
       statusCode: 200,
@@ -74,9 +91,10 @@ export class RestaurantsController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id') id: string) {
-    return this.restaurantsService.remove(id);
+  remove(@Param('id') id: string, @Req() request: AuthenticatedRequest) {
+    return this.restaurantsService.remove(id, request.user);
   }
 }

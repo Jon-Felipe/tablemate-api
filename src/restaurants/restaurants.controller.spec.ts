@@ -3,9 +3,17 @@ import { RestaurantsController } from './restaurants.controller.js';
 import { RestaurantsService } from './restaurants.service.js';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
+import { UserRole } from '../users/entities/user.entity.js';
+import type { AuthenticatedRequest } from '../users/types/authenticated-request.js';
+import { JwtAuthGuard } from '../users/jwt-auth.guard.js';
 
 describe('RestaurantsController', () => {
   let controller: RestaurantsController;
+
+  const staffUser = {
+    sub: 'staff-1',
+    role: UserRole.STAFF,
+  };
 
   const restaurantsServiceMock = {
     findAll: vi.fn(),
@@ -23,7 +31,10 @@ describe('RestaurantsController', () => {
       providers: [
         { provide: RestaurantsService, useValue: restaurantsServiceMock },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<RestaurantsController>(RestaurantsController);
   });
@@ -74,14 +85,21 @@ describe('RestaurantsController', () => {
     const restaurant = {
       id: 'restaurant-4',
       ...createRestaurantDto,
+      ownerId: staffUser.sub,
       rating: 0,
     };
 
+    const request = { user: staffUser };
+
     restaurantsServiceMock.create.mockReturnValue(restaurant);
 
-    const result = controller.create(createRestaurantDto);
+    const result = controller.create(
+      createRestaurantDto,
+      request as AuthenticatedRequest,
+    );
     expect(restaurantsServiceMock.create).toHaveBeenCalledWith(
       createRestaurantDto,
+      staffUser,
     );
     expect(result).toEqual({
       statusCode: 201,
@@ -105,12 +123,19 @@ describe('RestaurantsController', () => {
       rating: 4.7,
     };
 
+    const request = { user: staffUser };
+
     restaurantsServiceMock.update.mockReturnValue(restaurant);
 
-    const result = controller.update('restaurant-1', updateRestaurantDto);
+    const result = controller.update(
+      'restaurant-1',
+      updateRestaurantDto,
+      request as AuthenticatedRequest,
+    );
     expect(restaurantsServiceMock.update).toHaveBeenCalledWith(
       'restaurant-1',
       updateRestaurantDto,
+      staffUser,
     );
     expect(result).toEqual({
       statusCode: 200,
@@ -120,10 +145,18 @@ describe('RestaurantsController', () => {
   });
 
   it('should remove a restaurant', () => {
+    const request = { user: staffUser };
+
     restaurantsServiceMock.remove.mockReturnValue(undefined);
 
-    const result = controller.remove('restaurant-1');
-    expect(restaurantsServiceMock.remove).toHaveBeenCalledWith('restaurant-1');
+    const result = controller.remove(
+      'restaurant-1',
+      request as AuthenticatedRequest,
+    );
+    expect(restaurantsServiceMock.remove).toHaveBeenCalledWith(
+      'restaurant-1',
+      staffUser,
+    );
     expect(result).toBeUndefined();
   });
 });
