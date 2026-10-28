@@ -16,7 +16,7 @@ describe('RestaurantsRepository', () => {
   it('should return all restaurants', () => {
     const result = repository.findAll();
 
-    expect(result).toHaveLength(3);
+    expect(result).toHaveLength(10);
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -30,6 +30,10 @@ describe('RestaurantsRepository', () => {
         expect.objectContaining({
           id: 'restaurant-3',
           name: 'Sakura House',
+        }),
+        expect.objectContaining({
+          id: 'restaurant-10',
+          name: 'The Breakfast Club',
         }),
       ]),
     );
@@ -63,15 +67,18 @@ describe('RestaurantsRepository', () => {
       city: 'Cape Town',
     };
 
-    const result = repository.create(createRestaurantDto);
+    const result = repository.create(createRestaurantDto, 'user-1');
 
     expect(result).toEqual({
-      id: 'restaurant-4',
+      id: 'restaurant-11',
       ...createRestaurantDto,
+      ownerId: 'user-1',
       rating: 0,
     });
 
-    const foundRestaurant = repository.findById('restaurant-4');
+    expect(repository.findAll()).toHaveLength(11);
+
+    const foundRestaurant = repository.findById('restaurant-11');
     expect(foundRestaurant).toEqual(result);
   });
 
