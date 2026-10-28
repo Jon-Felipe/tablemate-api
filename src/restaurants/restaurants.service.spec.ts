@@ -19,6 +19,7 @@ describe('RestaurantsService', () => {
     sub: 'staff-1',
     role: UserRole.STAFF,
   };
+
   const unauthorizedUser = {
     sub: 'customer-1',
     role: UserRole.CUSTOMER,
