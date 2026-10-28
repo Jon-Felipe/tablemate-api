@@ -20,7 +20,7 @@ export class RestaurantsRepository {
     },
     {
       id: 'restaurant-2',
-      ownerId: 'user-2',
+      ownerId: 'user-1',
       name: 'Casa Verde',
       imageUrl:
         'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80',

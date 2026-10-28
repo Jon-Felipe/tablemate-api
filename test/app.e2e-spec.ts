@@ -7,6 +7,9 @@ import { JwtService } from '@nestjs/jwt';
 describe('API (e2e)', () => {
   let app: INestApplication;
   let adminAccessToken: string;
+  let staffAccessToken: string;
+  let anotherStaffAccessToken: string;
+  let customerAccessToken: string;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -26,6 +29,18 @@ describe('API (e2e)', () => {
     adminAccessToken = await jwtService.signAsync({
       sub: 'e2e-admin-1',
       role: 'ADMIN',
+    });
+    staffAccessToken = await jwtService.signAsync({
+      sub: 'user-2',
+      role: 'STAFF',
+    });
+    anotherStaffAccessToken = await jwtService.signAsync({
+      sub: 'another-staff-1',
+      role: 'STAFF',
+    });
+    customerAccessToken = await jwtService.signAsync({
+      sub: 'e2e-customer-1',
+      role: 'CUSTOMER',
     });
   });
 
@@ -60,6 +75,37 @@ describe('API (e2e)', () => {
         city: 'Cape Town',
       })
       .expect(400);
+  });
+
+  it('POST /api/v1/restaurants should return 401 without a token', () => {
+    return request(app.getHttpServer())
+      .post('/api/v1/restaurants')
+      .send({
+        name: 'La Piazza',
+        imageUrl:
+          'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
+        description: 'Authentic Italian cuisine',
+        cuisine: 'Italian',
+        address: '10 Church Street',
+        city: 'Cape Town',
+      })
+      .expect(401);
+  });
+
+  it('POST /api/v1/restaurants should return 403 for a customer', () => {
+    return request(app.getHttpServer())
+      .post('/api/v1/restaurants')
+      .set('Authorization', `Bearer ${customerAccessToken}`)
+      .send({
+        name: 'La Piazza',
+        imageUrl:
+          'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
+        description: 'Authentic Italian cuisine',
+        cuisine: 'Italian',
+        address: '10 Church Street',
+        city: 'Cape Town',
+      })
+      .expect(403);
   });
 
   it('POST /api/v1/restaurants should create a restaurant', () => {
@@ -115,6 +161,25 @@ describe('API (e2e)', () => {
       .expect(404);
   });
 
+  it('PATCH /api/v1/restaurants/:id should return 401 without a token', () => {
+    return request(app.getHttpServer())
+      .patch('/api/v1/restaurants/restaurant-1')
+      .send({
+        name: 'Updated Name',
+      })
+      .expect(401);
+  });
+
+  it('PATCH /api/v1/restaurants/:id should return 403 for a customer', () => {
+    return request(app.getHttpServer())
+      .patch('/api/v1/restaurants/restaurant-1')
+      .set('Authorization', `Bearer ${customerAccessToken}`)
+      .send({
+        name: 'Updated Name',
+      })
+      .expect(403);
+  });
+
   it('PATCH /api/v1/restaurants/:id should update a restaurant', () => {
     return request(app.getHttpServer())
       .patch('/api/v1/restaurants/restaurant-1')
@@ -139,6 +204,36 @@ describe('API (e2e)', () => {
       });
   });
 
+  it('PATCH /api/v1/restaurants/:id should allow staff to update their own restaurant', () => {
+    return request(app.getHttpServer())
+      .patch('/api/v1/restaurants/restaurant-1')
+      .set('Authorization', `Bearer ${staffAccessToken}`)
+      .send({
+        name: 'Staff Updated Restaurant',
+      })
+      .expect(200);
+  });
+
+  it('PATCH /api/v1/restaurants/:id should allow admin to update another staff members restaurant', () => {
+    return request(app.getHttpServer())
+      .patch('/api/v1/restaurants/restaurant-1')
+      .set('Authorization', `Bearer ${adminAccessToken}`)
+      .send({
+        name: 'Admin Updated Restaurant',
+      })
+      .expect(200);
+  });
+
+  it('PATCH /api/v1/restaurants/:id should forbid staff from updating another staff members restaurant', () => {
+    return request(app.getHttpServer())
+      .patch('/api/v1/restaurants/restaurant-1')
+      .set('Authorization', `Bearer ${anotherStaffAccessToken}`)
+      .send({
+        name: 'Unauthorized Update',
+      })
+      .expect(403);
+  });
+
   it('PATCH /api/v1/restaurants/:id should return 404 for a missing restaurant', () => {
     return request(app.getHttpServer())
       .patch('/api/v1/restaurants/does-not-exist')
@@ -147,6 +242,19 @@ describe('API (e2e)', () => {
         name: 'Updated Name',
       })
       .expect(404);
+  });
+
+  it('DELETE /api/v1/restaurants/:id should return 401 without a token', () => {
+    return request(app.getHttpServer())
+      .delete('/api/v1/restaurants/restaurant-1')
+      .expect(401);
+  });
+
+  it('DELETE /api/v1/restaurants/:id should return 403 for a customer', () => {
+    return request(app.getHttpServer())
+      .delete('/api/v1/restaurants/restaurant-1')
+      .set('Authorization', `Bearer ${customerAccessToken}`)
+      .expect(403);
   });
 
   it('DELETE /api/v1/restaurants/:id should remove a restaurant', async () => {
@@ -158,6 +266,20 @@ describe('API (e2e)', () => {
     await request(app.getHttpServer())
       .get('/api/v1/restaurants/restaurant-1')
       .expect(404);
+  });
+
+  it('DELETE /api/v1/restaurants/:id should allow staff to remove their own restaurant', () => {
+    return request(app.getHttpServer())
+      .delete('/api/v1/restaurants/restaurant-1')
+      .set('Authorization', `Bearer ${staffAccessToken}`)
+      .expect(204);
+  });
+
+  it('DELETE /api/v1/restaurants/:id should forbid staff from removing another staff members restaurant', () => {
+    return request(app.getHttpServer())
+      .delete('/api/v1/restaurants/restaurant-2')
+      .set('Authorization', `Bearer ${staffAccessToken}`)
+      .expect(403);
   });
 
   it('DELETE /api/v1/restaurants/:id should return 404 for a missing restaurant', () => {
@@ -229,12 +351,14 @@ describe('API (e2e)', () => {
     const userId = loginResponse.body.data.user.id as string;
 
     await request(app.getHttpServer())
-      .get(`/api/v1/users/${loginResponse.body.data.user.id}`)
+      .get('/api/v1/users/me')
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200)
       .expect((response) => {
         expect(response.body.statusCode).toBe(200);
-        expect(response.body.message).toBe('User retrieved successfully');
+        expect(response.body.message).toBe(
+          'Current user retrieved successfully',
+        );
         expect(response.body.data).toEqual({
           id: userId,
           name: 'Current Test User',
