@@ -1,13 +1,28 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service.js';
 import { RestaurantsRepository } from './restaurants.repository.js';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
 import { MenuRepository } from './menu.repository.js';
+import { UserRole } from '../users/entities/user.entity.js';
 
 describe('RestaurantsService', () => {
   let service: RestaurantsService;
+
+  const adminUser = {
+    sub: 'admin-1',
+    role: UserRole.ADMIN,
+  };
+
+  const staffUser = {
+    sub: 'staff-1',
+    role: UserRole.STAFF,
+  };
+  const unauthorizedUser = {
+    sub: 'customer-1',
+    role: UserRole.CUSTOMER,
+  };
 
   const restaurantsRepositoryMock = {
     findAll: vi.fn(),
@@ -76,8 +91,7 @@ describe('RestaurantsService', () => {
   it('should create a restaurant', () => {
     const createRestaurantDto: CreateRestaurantDto = {
       name: 'La Piazza',
-      imageUrl:
-        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
+      imageUrl: 'https://example.com/restaurant.jpg',
       description: 'Authentic Italian cuisine.',
       cuisine: 'Italian',
       address: '10 Church Street',
@@ -87,14 +101,16 @@ describe('RestaurantsService', () => {
     const restaurant = {
       id: 'restaurant-4',
       ...createRestaurantDto,
+      ownerId: staffUser.sub,
       rating: 0,
     };
 
     restaurantsRepositoryMock.create.mockReturnValue(restaurant);
 
-    const result = service.create(createRestaurantDto);
+    const result = service.create(createRestaurantDto, staffUser);
     expect(restaurantsRepositoryMock.create).toHaveBeenCalledWith(
       createRestaurantDto,
+      staffUser.sub,
     );
     expect(result).toEqual(restaurant);
   });
@@ -104,9 +120,15 @@ describe('RestaurantsService', () => {
       name: 'The Golden Fork Updated',
     };
 
-    const restaurant = {
+    const existingRestaurant = {
       id: 'restaurant-1',
       name: 'The Golden Fork Updated',
+      ownerId: staffUser.sub,
+    };
+
+    const updatedRestaurant = {
+      ...existingRestaurant,
+      ...updateRestaurantDto,
       description: 'Modern European cuisine in a relaxed atmosphere.',
       cuisine: 'European',
       address: '12 Main Street',
@@ -114,45 +136,64 @@ describe('RestaurantsService', () => {
       rating: 4.7,
     };
 
-    restaurantsRepositoryMock.update.mockReturnValue(restaurant);
+    restaurantsRepositoryMock.findById.mockReturnValue(existingRestaurant);
+    restaurantsRepositoryMock.update.mockReturnValue(updatedRestaurant);
 
-    const result = service.update('restaurant-1', updateRestaurantDto);
+    const result = service.update(
+      'restaurant-1',
+      updateRestaurantDto,
+      staffUser,
+    );
+
+    expect(restaurantsRepositoryMock.findById).toHaveBeenCalledWith(
+      'restaurant-1',
+    );
     expect(restaurantsRepositoryMock.update).toHaveBeenCalledWith(
       'restaurant-1',
       updateRestaurantDto,
     );
-    expect(result).toEqual(restaurant);
+    expect(result).toEqual(updatedRestaurant);
   });
 
   it('should remove a restaurant', () => {
-    const restaurant = { id: 'restaurant-1', name: 'The Golden Fork' };
+    const restaurant = {
+      id: 'restaurant-1',
+      name: 'The Golden Fork',
+      ownerId: staffUser.sub,
+    };
 
-    restaurantsRepositoryMock.remove.mockReturnValue(restaurant);
+    restaurantsRepositoryMock.findById.mockReturnValue(restaurant);
 
-    const result = service.remove('restaurant-1');
+    service.remove('restaurant-1', staffUser);
+
+    expect(restaurantsRepositoryMock.findById).toHaveBeenCalledWith(
+      'restaurant-1',
+    );
     expect(restaurantsRepositoryMock.remove).toHaveBeenCalledWith(
       'restaurant-1',
     );
-    expect(result).toBeUndefined();
   });
 
   it('should throw NotFoundException when removing a restaurant that does not exist', () => {
-    restaurantsRepositoryMock.remove.mockReturnValue(undefined);
+    restaurantsRepositoryMock.findById.mockReturnValue(undefined);
 
     expect(() => {
-      service.remove('does-not-exist');
+      service.remove('does-not-exist', adminUser);
     }).toThrow(NotFoundException);
+    expect(restaurantsRepositoryMock.remove).not.toHaveBeenCalled();
   });
 
   it('should throw NotFoundException when updating a restaurant that does not exist', () => {
-    restaurantsRepositoryMock.update.mockReturnValue(undefined);
+    restaurantsRepositoryMock.findById.mockReturnValue(undefined);
+
     const updateRestaurantDto: UpdateRestaurantDto = {
       name: 'Updated Name',
     };
 
     expect(() => {
-      service.update('does-not-exist', updateRestaurantDto);
+      service.update('does-not-exist', updateRestaurantDto, adminUser);
     }).toThrow(NotFoundException);
+    expect(restaurantsRepositoryMock.remove).not.toHaveBeenCalled();
   });
 
   it('should return a restaurant menu', () => {
@@ -201,5 +242,99 @@ describe('RestaurantsService', () => {
       NotFoundException,
     );
     expect(menuRepositoryMock.findMenuByRestaurantId).not.toHaveBeenCalled();
+  });
+
+  it('should throw ForbiddenException when an unauthorized user tries to create a restaurant', () => {
+    const createRestaurantDto: CreateRestaurantDto = {
+      name: 'La Piazza',
+      imageUrl: 'https://example.com/restaurant.jpg',
+      description: 'Authentic Italian cuisine.',
+      cuisine: 'Italian',
+      address: '10 Church Street',
+      city: 'Cape Town',
+    };
+
+    expect(() => {
+      service.create(createRestaurantDto, unauthorizedUser);
+    }).toThrow(ForbiddenException);
+    expect(restaurantsRepositoryMock.create).not.toHaveBeenCalled();
+  });
+
+  it('should prevent staff from updating another staff members restaurant', () => {
+    restaurantsRepositoryMock.findById.mockReturnValue({
+      id: 'restaurant-1',
+      ownerId: 'another-staff-1',
+    });
+
+    expect(() => {
+      service.update('restaurant-1', { name: 'Updated Name' }, staffUser);
+    }).toThrow(ForbiddenException);
+    expect(restaurantsRepositoryMock.update).not.toHaveBeenCalled();
+  });
+
+  it('should allow admins to update any restaurant', () => {
+    const restaurant = {
+      id: 'restaurant-1',
+      ownerId: 'another-staff-1',
+    };
+
+    restaurantsRepositoryMock.findById.mockReturnValue(restaurant);
+    restaurantsRepositoryMock.update.mockReturnValue({
+      ...restaurant,
+      name: 'Updated Name',
+    });
+
+    expect(
+      service.update('restaurant-1', { name: 'Updated Name' }, adminUser),
+    ).toEqual({ ...restaurant, name: 'Updated Name' });
+    expect(restaurantsRepositoryMock.update).toHaveBeenCalled();
+  });
+
+  it('should throw ForbiddenException when an unauthorized user tries to remove a restaurant', () => {
+    const restaurant = {
+      id: 'restaurant-1',
+      ownerId: 'another-staff-1',
+    };
+
+    restaurantsRepositoryMock.findById.mockReturnValue(restaurant);
+
+    expect(() => {
+      service.remove('restaurant-1', unauthorizedUser);
+    }).toThrow(ForbiddenException);
+    expect(restaurantsRepositoryMock.remove).not.toHaveBeenCalled();
+  });
+
+  it('should prevent staff from removing another staff members restaurant', () => {
+    restaurantsRepositoryMock.findById.mockReturnValue({
+      id: 'restaurant-1',
+      ownerId: 'another-staff-1',
+    });
+
+    expect(() => {
+      service.remove('restaurant-1', staffUser);
+    }).toThrow(ForbiddenException);
+    expect(restaurantsRepositoryMock.remove).not.toHaveBeenCalled();
+  });
+
+  it('should allow admins to remove any restaurant', () => {
+    restaurantsRepositoryMock.findById
+      .mockReturnValueOnce({
+        id: 'restaurant-1',
+        ownerId: 'another-staff-1',
+      })
+      .mockReturnValueOnce({
+        id: 'restaurant-2',
+        ownerId: 'another-staff-1',
+      });
+    service.remove('restaurant-1', adminUser);
+    service.remove('restaurant-2', adminUser);
+
+    expect(restaurantsRepositoryMock.remove).toHaveBeenCalledTimes(2);
+    expect(restaurantsRepositoryMock.remove).toHaveBeenCalledWith(
+      'restaurant-1',
+    );
+    expect(restaurantsRepositoryMock.remove).toHaveBeenCalledWith(
+      'restaurant-2',
+    );
   });
 });
