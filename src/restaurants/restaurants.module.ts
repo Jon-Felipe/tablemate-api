@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
 
-import { RestaurantsRepository } from './restaurants.repository.js';
 import { RestaurantsService } from './restaurants.service.js';
 import { RestaurantsController } from './restaurants.controller.js';
-import { MenuRepository } from './menu.repository.js';
 import { UsersModule } from '../users/users.module.js';
+import { MenusModule } from './menus/menus.module.js';
+import { RestaurantDataModule } from './restaurant-data.module.js';
 
 @Module({
-  imports: [UsersModule],
+  imports: [UsersModule, MenusModule, RestaurantDataModule],
   controllers: [RestaurantsController],
-  providers: [RestaurantsRepository, MenuRepository, RestaurantsService],
+  providers: [RestaurantsService],
   exports: [RestaurantsService],
 })
 export class RestaurantsModule {}

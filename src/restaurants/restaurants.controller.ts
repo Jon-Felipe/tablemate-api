@@ -10,15 +10,21 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
+
+// extras
 import { RestaurantsService } from './restaurants.service.js';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
 import { JwtAuthGuard } from '../users/jwt-auth.guard.js';
+import { MenusService } from './menus/menus.service.js';
 import type { AuthenticatedRequest } from '../users/types/authenticated-request.js';
 
 @Controller('restaurants')
 export class RestaurantsController {
-  constructor(private readonly restaurantsService: RestaurantsService) {}
+  constructor(
+    private readonly restaurantsService: RestaurantsService,
+    private readonly menusService: MenusService,
+  ) {}
 
   @Get()
   findAll() {
@@ -33,7 +39,7 @@ export class RestaurantsController {
 
   @Get(':id/menu')
   findMenuByRestaurantId(@Param('id') id: string) {
-    const menu = this.restaurantsService.findMenuByRestaurantId(id);
+    const menu = this.menusService.findMenuByRestaurantId(id);
 
     return {
       statusCode: 200,
