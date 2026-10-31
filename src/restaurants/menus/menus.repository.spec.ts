@@ -1,10 +1,10 @@
-import { MenuRepository } from './menu.repository.js';
+import { MenusRepository } from './menus.repository.js';
 
 describe('MenuRepository', () => {
-  let repository: MenuRepository;
+  let repository: MenusRepository;
 
   beforeEach(() => {
-    repository = new MenuRepository();
+    repository = new MenusRepository();
   });
 
   it('should be defined', () => {

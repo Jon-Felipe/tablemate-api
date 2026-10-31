@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
+// extras
 import { RestaurantMenu } from './entities/restaurant-menu.entity.js';
+import { CreateMenuItemDto } from './dto/create-menu.dto.js';
+import type { MenuItem } from './entities/menu-item.entity.js';
 
 @Injectable()
-export class MenuRepository {
+export class MenusRepository {
   private readonly menus: RestaurantMenu[] = [
     {
       restaurantId: 'restaurant-1',
@@ -144,5 +147,32 @@ export class MenuRepository {
 
   findMenuByRestaurantId(restaurantId: string): RestaurantMenu | undefined {
     return this.menus.find((m) => m.restaurantId === restaurantId);
+  }
+
+  createMenuItem(
+    restaurantId: string,
+    categoryId: string,
+    createMenuItemDto: CreateMenuItemDto,
+  ): MenuItem | undefined {
+    const menu = this.findMenuByRestaurantId(restaurantId);
+
+    if (!menu) {
+      return undefined;
+    }
+
+    const category = menu.categories.find((c) => c.id === categoryId);
+
+    if (!category) {
+      return undefined;
+    }
+
+    const newMenuItem: MenuItem = {
+      id: `${category.id}-${Date.now()}`,
+      ...createMenuItemDto,
+    };
+
+    category.items.push(newMenuItem);
+
+    return newMenuItem;
   }
 }
