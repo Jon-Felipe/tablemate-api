@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
+// extras
 import { RestaurantsController } from './restaurants.controller.js';
 import { RestaurantsService } from './restaurants.service.js';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
@@ -6,6 +8,7 @@ import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
 import { UserRole } from '../users/entities/user.entity.js';
 import type { AuthenticatedRequest } from '../users/types/authenticated-request.js';
 import { JwtAuthGuard } from '../users/jwt-auth.guard.js';
+import { MenusService } from './menus/menus.service.js';
 
 describe('RestaurantsController', () => {
   let controller: RestaurantsController;
@@ -23,6 +26,11 @@ describe('RestaurantsController', () => {
     remove: vi.fn(),
   };
 
+  const menusServiceMock = {
+    findMenuByRestaurantId: vi.fn(),
+    createMenuItem: vi.fn(),
+  };
+
   beforeEach(async () => {
     vi.clearAllMocks();
 
@@ -30,6 +38,7 @@ describe('RestaurantsController', () => {
       controllers: [RestaurantsController],
       providers: [
         { provide: RestaurantsService, useValue: restaurantsServiceMock },
+        { provide: MenusService, useValue: menusServiceMock },
       ],
     })
       .overrideGuard(JwtAuthGuard)
