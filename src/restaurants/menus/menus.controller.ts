@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -13,6 +14,7 @@ import { MenusService } from './menus.service.js';
 import { CreateMenuItemDto } from './dto/create-menu.dto.js';
 import { JwtAuthGuard } from '../../users/jwt-auth.guard.js';
 import type { AuthenticatedRequest } from '../../users/types/authenticated-request.js';
+import { UpdateMenuItemDto } from './dto/update-menu.dto.js';
 
 @Controller('restaurants/:restaurantId/menus')
 export class MenusController {
@@ -66,6 +68,30 @@ export class MenusController {
     return {
       statusCode: 201,
       message: 'Menu Item created successfully',
+      data: menuItem,
+    };
+  }
+
+  @Patch('categories/:categoryId/items/:menuItemId')
+  @UseGuards(JwtAuthGuard)
+  updateMenuItem(
+    @Param('restaurantId') restaurantId: string,
+    @Param('categoryId') categoryId: string,
+    @Param('menuItemId') menuItemId: string,
+    @Body() updateMenuItemDto: UpdateMenuItemDto,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    const menuItem = this.menusService.updateMenuItem(
+      restaurantId,
+      categoryId,
+      menuItemId,
+      updateMenuItemDto,
+      request.user,
+    );
+
+    return {
+      statusCode: 200,
+      message: 'Menu Item updated successfully',
       data: menuItem,
     };
   }

@@ -9,6 +9,7 @@ import { MenusRepository } from './menus.repository.js';
 import { RestaurantsRepository } from '../restaurants.repository.js';
 import { CreateMenuItemDto } from './dto/create-menu.dto.js';
 import { UserRole } from '../../users/entities/user.entity.js';
+import { UpdateMenuItemDto } from './dto/update-menu.dto.js';
 
 @Injectable()
 export class MenusService {
@@ -93,6 +94,44 @@ export class MenusService {
 
     if (!menuItem) {
       throw new NotFoundException(`Failed to create menu item`);
+    }
+
+    return menuItem;
+  }
+
+  updateMenuItem(
+    restaurantId: string,
+    categoryId: string,
+    menuItemId: string,
+    updateMenuItemDto: UpdateMenuItemDto,
+    user: { sub: string; role: string },
+  ) {
+    const restaurant = this.restaurantsRepository.findById(restaurantId);
+
+    if (!restaurant) {
+      throw new NotFoundException(
+        `Restaurant with ID ${restaurantId} not found`,
+      );
+    }
+
+    if (
+      user.role !== UserRole.ADMIN &&
+      (user.role !== UserRole.STAFF || restaurant.ownerId !== user.sub)
+    ) {
+      throw new ForbiddenException(
+        'You are not allowed to update menu items for this restaurant',
+      );
+    }
+
+    const menuItem = this.menuRepository.updateMenuItem(
+      restaurantId,
+      categoryId,
+      menuItemId,
+      updateMenuItemDto,
+    );
+
+    if (!menuItem) {
+      throw new NotFoundException(`Menu item with ID ${menuItemId} not found`);
     }
 
     return menuItem;

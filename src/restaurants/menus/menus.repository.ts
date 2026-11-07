@@ -5,6 +5,7 @@ import { RestaurantMenu } from './entities/restaurant-menu.entity.js';
 import { CreateMenuItemDto } from './dto/create-menu.dto.js';
 import type { MenuItem } from './entities/menu-item.entity.js';
 import { MenuCategory } from './entities/menu-category.entity.js';
+import { UpdateMenuItemDto } from './dto/update-menu.dto.js';
 
 @Injectable()
 export class MenusRepository {
@@ -185,6 +186,26 @@ export class MenusRepository {
     category.items.push(newMenuItem);
 
     return newMenuItem;
+  }
+
+  updateMenuItem(
+    restaurantId: string,
+    categoryId: string,
+    menuItemId: string,
+    updateMenuItemDto: UpdateMenuItemDto,
+  ): MenuItem | undefined {
+    const menuItem = this.findMenuItemById(
+      restaurantId,
+      categoryId,
+      menuItemId,
+    );
+
+    if (!menuItem) {
+      return undefined;
+    }
+
+    Object.assign(menuItem, updateMenuItemDto);
+    return menuItem;
   }
 
   private findCategory(restaurantId: string, categoryId: string) {
