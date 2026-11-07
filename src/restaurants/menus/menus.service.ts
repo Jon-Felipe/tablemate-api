@@ -76,16 +76,25 @@ export class MenusService {
       );
     }
 
-    const category = menu.categories.find((c) => c.id === categoryId);
+    const category = this.menuRepository.findCategoryById(
+      restaurantId,
+      categoryId,
+    );
 
     if (!category) {
       throw new NotFoundException(`Category with ID ${categoryId} not found`);
     }
 
-    return this.menuRepository.createMenuItem(
+    const menuItem = this.menuRepository.createMenuItem(
       restaurantId,
       categoryId,
       createMenuItemDto,
     );
+
+    if (!menuItem) {
+      throw new NotFoundException(`Failed to create menu item`);
+    }
+
+    return menuItem;
   }
 }

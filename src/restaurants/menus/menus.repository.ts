@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { RestaurantMenu } from './entities/restaurant-menu.entity.js';
 import { CreateMenuItemDto } from './dto/create-menu.dto.js';
 import type { MenuItem } from './entities/menu-item.entity.js';
+import { MenuCategory } from './entities/menu-category.entity.js';
 
 @Injectable()
 export class MenusRepository {
@@ -149,23 +150,20 @@ export class MenusRepository {
     return this.menus.find((m) => m.restaurantId === restaurantId);
   }
 
+  findCategoryById(
+    restaurantId: string,
+    categoryId: string,
+  ): MenuCategory | undefined {
+    return this.findCategory(restaurantId, categoryId);
+  }
+
   findMenuItemById(
     restaurantId: string,
     categoryId: string,
     menuItemId: string,
   ): MenuItem | undefined {
-    const menu = this.findMenuByRestaurantId(restaurantId);
-    if (!menu) {
-      return undefined;
-    }
-
-    const category = menu.categories.find((c) => c.id === categoryId);
-    if (!category) {
-      return undefined;
-    }
-
-    const menuItem = category.items.find((item) => item.id === menuItemId);
-    return menuItem;
+    const category = this.findCategory(restaurantId, categoryId);
+    return category?.items.find((item) => item.id === menuItemId);
   }
 
   createMenuItem(
@@ -173,13 +171,7 @@ export class MenusRepository {
     categoryId: string,
     createMenuItemDto: CreateMenuItemDto,
   ): MenuItem | undefined {
-    const menu = this.findMenuByRestaurantId(restaurantId);
-
-    if (!menu) {
-      return undefined;
-    }
-
-    const category = menu.categories.find((c) => c.id === categoryId);
+    const category = this.findCategory(restaurantId, categoryId);
 
     if (!category) {
       return undefined;
@@ -193,5 +185,10 @@ export class MenusRepository {
     category.items.push(newMenuItem);
 
     return newMenuItem;
+  }
+
+  private findCategory(restaurantId: string, categoryId: string) {
+    const menu = this.findMenuByRestaurantId(restaurantId);
+    return menu?.categories.find((c) => c.id === categoryId);
   }
 }
