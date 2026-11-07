@@ -28,6 +28,23 @@ export class MenusService {
     return menu;
   }
 
+  findMenuItemById(
+    restaurantId: string,
+    categoryId: string,
+    menuItemId: string,
+  ) {
+    const menuItem = this.menuRepository.findMenuItemById(
+      restaurantId,
+      categoryId,
+      menuItemId,
+    );
+
+    if (!menuItem)
+      throw new NotFoundException(`Menu item with ID ${menuItemId} not found`);
+
+    return menuItem;
+  }
+
   createMenuItem(
     restaurantId: string,
     categoryId: string,

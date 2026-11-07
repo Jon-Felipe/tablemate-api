@@ -149,6 +149,25 @@ export class MenusRepository {
     return this.menus.find((m) => m.restaurantId === restaurantId);
   }
 
+  findMenuItemById(
+    restaurantId: string,
+    categoryId: string,
+    menuItemId: string,
+  ): MenuItem | undefined {
+    const menu = this.findMenuByRestaurantId(restaurantId);
+    if (!menu) {
+      return undefined;
+    }
+
+    const category = menu.categories.find((c) => c.id === categoryId);
+    if (!category) {
+      return undefined;
+    }
+
+    const menuItem = category.items.find((item) => item.id === menuItemId);
+    return menuItem;
+  }
+
   createMenuItem(
     restaurantId: string,
     categoryId: string,

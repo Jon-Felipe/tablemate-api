@@ -29,6 +29,25 @@ export class MenusController {
     };
   }
 
+  @Get('categories/:categoryId/items/:menuItemId')
+  findMenuItemById(
+    @Param('restaurantId') restaurantId: string,
+    @Param('categoryId') categoryId: string,
+    @Param('menuItemId') menuItemId: string,
+  ) {
+    const menuItem = this.menusService.findMenuItemById(
+      restaurantId,
+      categoryId,
+      menuItemId,
+    );
+
+    return {
+      statusCode: 200,
+      message: 'Menu Item retrieved successfully',
+      data: menuItem,
+    };
+  }
+
   @Post('categories/:categoryId/items')
   @UseGuards(JwtAuthGuard)
   createMenuItem(
