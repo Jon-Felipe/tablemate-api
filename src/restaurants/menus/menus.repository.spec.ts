@@ -43,6 +43,37 @@ describe('MenuRepository', () => {
     });
   });
 
+  describe('findMenuItemById', () => {
+    it('should return a menu item for valid restaurant, category, and menu item IDs', () => {
+      const restaurantId = 'restaurant-1';
+      const categoryId = 'starters';
+      const menuItemId = 'gf-starter-1';
+
+      const menuItem = repository.findMenuItemById(
+        restaurantId,
+        categoryId,
+        menuItemId,
+      );
+
+      expect(menuItem).toBeDefined();
+      expect(menuItem?.id).toBe(menuItemId);
+    });
+
+    it('should return undefined for an invalid menu item ID', () => {
+      const restaurantId = 'restaurant-1';
+      const categoryId = 'starters';
+      const menuItemId = 'invalid-menu-item-id';
+
+      const menuItem = repository.findMenuItemById(
+        restaurantId,
+        categoryId,
+        menuItemId,
+      );
+
+      expect(menuItem).toBeUndefined();
+    });
+  });
+
   describe('createMenuItem', () => {
     const createMenuItemDto: CreateMenuItemDto = {
       name: 'Test Menu Item',

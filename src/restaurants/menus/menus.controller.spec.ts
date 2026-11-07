@@ -13,6 +13,7 @@ describe('MenusController', () => {
 
   const menusServiceMock = {
     findMenuByRestaurantId: vi.fn(),
+    findMenuItemById: vi.fn(),
     createMenuItem: vi.fn(),
   };
 
@@ -78,6 +79,30 @@ describe('MenusController', () => {
 
       expect(menusServiceMock.findMenuByRestaurantId).toHaveBeenCalledWith(
         'restaurant-1',
+      );
+    });
+  });
+
+  describe('findMenuItemById', () => {
+    it('should return a menu item successfully', () => {
+      menusServiceMock.findMenuItemById.mockReturnValue(menuItem);
+
+      const result = controller.findMenuItemById(
+        'restaurant-1',
+        'starters',
+        'starters-123456',
+      );
+
+      expect(result).toEqual({
+        statusCode: 200,
+        message: 'Menu Item retrieved successfully',
+        data: menuItem,
+      });
+
+      expect(menusServiceMock.findMenuItemById).toHaveBeenCalledWith(
+        'restaurant-1',
+        'starters',
+        'starters-123456',
       );
     });
   });

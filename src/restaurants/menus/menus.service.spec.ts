@@ -12,6 +12,7 @@ describe('MenusService', () => {
   const menuRepositoryMock = {
     findMenuByRestaurantId: vi.fn(),
     findCategoryById: vi.fn(),
+    findMenuItemById: vi.fn(),
     createMenuItem: vi.fn(),
   };
 
@@ -83,6 +84,40 @@ describe('MenusService', () => {
       expect(() => service.findMenuByRestaurantId('restaurant-1')).toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('findMenuItemById', () => {
+    it('should return a menu item for valid IDs', () => {
+      const menuItem = {
+        id: 'menu-item-1',
+        name: 'Test Menu Item',
+        description: 'A test menu item for unit testing.',
+        price: 9.99,
+        imageUrl: 'https://example.com/test-menu-item.jpg',
+      };
+      menuRepositoryMock.findMenuItemById.mockReturnValue(menuItem);
+
+      const result = service.findMenuItemById(
+        'restaurant-1',
+        'starters',
+        'menu-item-1',
+      );
+
+      expect(result).toEqual(menuItem);
+      expect(menuRepositoryMock.findMenuItemById).toHaveBeenCalledWith(
+        'restaurant-1',
+        'starters',
+        'menu-item-1',
+      );
+    });
+
+    it('should throw NotFoundException when the menu item does not exist', () => {
+      menuRepositoryMock.findMenuItemById.mockReturnValue(undefined);
+
+      expect(() =>
+        service.findMenuItemById('restaurant-1', 'starters', 'menu-item-1'),
+      ).toThrow(NotFoundException);
     });
   });
 
