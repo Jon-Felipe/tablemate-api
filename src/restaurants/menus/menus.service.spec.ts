@@ -11,6 +11,7 @@ describe('MenusService', () => {
 
   const menuRepositoryMock = {
     findMenuByRestaurantId: vi.fn(),
+    findCategoryById: vi.fn(),
     createMenuItem: vi.fn(),
   };
 
@@ -89,6 +90,7 @@ describe('MenusService', () => {
     it('should create a menu item when the user is an admin', () => {
       restaurantsServiceMock.findById.mockReturnValue(restaurant);
       menuRepositoryMock.findMenuByRestaurantId.mockReturnValue(menu);
+      menuRepositoryMock.findCategoryById.mockReturnValue(menu.categories[0]);
       menuRepositoryMock.createMenuItem.mockReturnValue(newMenuItem);
 
       const user = { sub: 'user-1', role: UserRole.ADMIN };
@@ -113,6 +115,7 @@ describe('MenusService', () => {
     it('should create a menu item when the user is the restaurant owner and has the STAFF role', () => {
       restaurantsServiceMock.findById.mockReturnValue(restaurant);
       menuRepositoryMock.findMenuByRestaurantId.mockReturnValue(menu);
+      menuRepositoryMock.findCategoryById.mockReturnValue(menu.categories[0]);
       menuRepositoryMock.createMenuItem.mockReturnValue(newMenuItem);
 
       const user = { sub: 'user-1', role: UserRole.STAFF };
@@ -200,6 +203,7 @@ describe('MenusService', () => {
     it('should throw NotFoundException when the category does not exist', () => {
       restaurantsServiceMock.findById.mockReturnValue(restaurant);
       menuRepositoryMock.findMenuByRestaurantId.mockReturnValue(menu);
+      menuRepositoryMock.findCategoryById.mockReturnValue(undefined);
 
       const user = { sub: 'user-1', role: UserRole.ADMIN };
 
