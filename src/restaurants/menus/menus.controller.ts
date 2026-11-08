@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -93,6 +94,27 @@ export class MenusController {
       statusCode: 200,
       message: 'Menu Item updated successfully',
       data: menuItem,
+    };
+  }
+
+  @Delete('categories/:categoryId/items/:menuItemId')
+  @UseGuards(JwtAuthGuard)
+  deleteMenuItem(
+    @Param('restaurantId') restaurantId: string,
+    @Param('categoryId') categoryId: string,
+    @Param('menuItemId') menuItemId: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    this.menusService.deleteMenuItem(
+      restaurantId,
+      categoryId,
+      menuItemId,
+      request.user,
+    );
+
+    return {
+      statusCode: 200,
+      message: 'Menu Item deleted successfully',
     };
   }
 }

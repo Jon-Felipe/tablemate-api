@@ -208,6 +208,29 @@ export class MenusRepository {
     return menuItem;
   }
 
+  deleteMenuItem(
+    restaurantId: string,
+    categoryId: string,
+    menuItemId: string,
+  ): boolean {
+    const category = this.findCategory(restaurantId, categoryId);
+
+    if (!category) {
+      return false;
+    }
+
+    const menuItemIndex = category.items.findIndex(
+      (item) => item.id === menuItemId,
+    );
+
+    if (menuItemIndex === -1) {
+      return false;
+    }
+
+    category.items.splice(menuItemIndex, 1);
+    return true;
+  }
+
   private findCategory(restaurantId: string, categoryId: string) {
     const menu = this.findMenuByRestaurantId(restaurantId);
     return menu?.categories.find((c) => c.id === categoryId);

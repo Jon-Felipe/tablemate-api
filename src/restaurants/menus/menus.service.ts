@@ -136,4 +136,30 @@ export class MenusService {
 
     return menuItem;
   }
+
+  deleteMenuItem(
+    restaurantId: string,
+    categoryId: string,
+    menuItemId: string,
+    user: { sub: string; role: string },
+  ) {
+    const restaurant = this.restaurantsRepository.findById(restaurantId);
+
+    if (!restaurant) {
+      throw new NotFoundException(
+        `Restaurant with ID ${restaurantId} not found`,
+      );
+    }
+
+    if (
+      user.role !== UserRole.ADMIN &&
+      (user.role !== UserRole.STAFF || restaurant.ownerId !== user.sub)
+    ) {
+      throw new ForbiddenException(
+        'You are not allowed to delete menu items for this restaurant',
+      );
+    }
+
+    this.menuRepository.deleteMenuItem(restaurantId, categoryId, menuItemId);
+  }
 }
