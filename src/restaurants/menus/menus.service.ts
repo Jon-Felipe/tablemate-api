@@ -10,6 +10,7 @@ import { RestaurantsRepository } from '../restaurants.repository.js';
 import { CreateMenuItemDto } from './dto/create-menu.dto.js';
 import { UserRole } from '../../users/entities/user.entity.js';
 import { UpdateMenuItemDto } from './dto/update-menu.dto.js';
+import type { MenuItem } from './entities/menu-item.entity.js';
 
 @Injectable()
 export class MenusService {
@@ -86,17 +87,16 @@ export class MenusService {
       throw new NotFoundException(`Category with ID ${categoryId} not found`);
     }
 
-    const menuItem = this.menusRepository.createMenuItem(
+    const newMenuItem: MenuItem = {
+      id: crypto.randomUUID(),
+      ...createMenuItemDto,
+    };
+
+    return this.menusRepository.createMenuItem(
       restaurantId,
       categoryId,
-      createMenuItemDto,
+      newMenuItem,
     );
-
-    if (!menuItem) {
-      throw new NotFoundException(`Failed to create menu item`);
-    }
-
-    return menuItem;
   }
 
   updateMenuItem(

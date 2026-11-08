@@ -168,7 +168,7 @@ export class MenusRepository {
   createMenuItem(
     restaurantId: string,
     categoryId: string,
-    data: Omit<MenuItem, 'id'>,
+    menuItem: MenuItem,
   ): MenuItem | undefined {
     const category = this.findCategory(restaurantId, categoryId);
 
@@ -176,14 +176,8 @@ export class MenusRepository {
       return undefined;
     }
 
-    const newMenuItem: MenuItem = {
-      id: `${category.id}-${Date.now()}`,
-      ...data,
-    };
-
-    category.items.push(newMenuItem);
-
-    return newMenuItem;
+    category.items.push(menuItem);
+    return menuItem;
   }
 
   updateMenuItem(
