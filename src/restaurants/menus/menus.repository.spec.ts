@@ -210,4 +210,70 @@ describe('MenuRepository', () => {
       expect(updatedMenuItem).toBeUndefined();
     });
   });
+
+  describe('deleteMenuItem', () => {
+    it('should delete a menu item for valid restaurant, category, and menu item IDs', () => {
+      const restaurantId = 'restaurant-1';
+      const categoryId = 'starters';
+      const menuItemId = 'gf-starter-1';
+
+      const result = repository.deleteMenuItem(
+        restaurantId,
+        categoryId,
+        menuItemId,
+      );
+
+      expect(result).toBe(true);
+
+      const deletedMenuItem = repository.findMenuItemById(
+        restaurantId,
+        categoryId,
+        menuItemId,
+      );
+
+      expect(deletedMenuItem).toBeUndefined();
+    });
+
+    it('should return false for an invalid menu item ID', () => {
+      const restaurantId = 'restaurant-1';
+      const categoryId = 'starters';
+      const menuItemId = 'invalid-menu-item-id';
+
+      const result = repository.deleteMenuItem(
+        restaurantId,
+        categoryId,
+        menuItemId,
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false for an invalid category ID', () => {
+      const restaurantId = 'restaurant-1';
+      const categoryId = 'invalid-category';
+      const menuItemId = 'gf-starter-1';
+
+      const result = repository.deleteMenuItem(
+        restaurantId,
+        categoryId,
+        menuItemId,
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false for an invalid restaurant ID', () => {
+      const restaurantId = 'invalid-restaurant';
+      const categoryId = 'starters';
+      const menuItemId = 'gf-starter-1';
+
+      const result = repository.deleteMenuItem(
+        restaurantId,
+        categoryId,
+        menuItemId,
+      );
+
+      expect(result).toBe(false);
+    });
+  });
 });

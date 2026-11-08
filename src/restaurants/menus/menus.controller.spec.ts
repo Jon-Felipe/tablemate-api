@@ -16,6 +16,7 @@ describe('MenusController', () => {
     findMenuItemById: vi.fn(),
     createMenuItem: vi.fn(),
     updateMenuItem: vi.fn(),
+    deleteMenuItem: vi.fn(),
   };
 
   const createMenuItemDto: CreateMenuItemDto = {
@@ -206,6 +207,31 @@ describe('MenusController', () => {
         'starters-123456',
         updateMenuItemDto,
         request.user,
+      );
+    });
+  });
+
+  describe('deleteMenuItem', () => {
+    it('should delete a menu item successfully', () => {
+      menusServiceMock.deleteMenuItem.mockReturnValue(undefined);
+
+      const result = controller.deleteMenuItem(
+        'restaurant-1',
+        'starters',
+        'starters-123456',
+        request,
+      );
+
+      expect(result).toEqual({
+        statusCode: 200,
+        message: 'Menu Item deleted successfully',
+      });
+
+      expect(menusServiceMock.deleteMenuItem).toHaveBeenCalledWith(
+        'restaurant-1',
+        'starters',
+        'starters-123456',
+        request,
       );
     });
   });

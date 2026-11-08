@@ -15,6 +15,7 @@ describe('MenusService', () => {
     findMenuItemById: vi.fn(),
     createMenuItem: vi.fn(),
     updateMenuItem: vi.fn(),
+    deleteMenuItem: vi.fn(),
   };
 
   const restaurantsServiceMock = {
@@ -376,6 +377,108 @@ describe('MenusService', () => {
         'starters',
         'invalid-menu-item',
         { name: 'Updated Menu Item' },
+      );
+    });
+  });
+
+  describe('deleteMenuItem', () => {
+    it('should delete a menu item when the user is an admin', () => {
+      restaurantsServiceMock.findById.mockReturnValue(restaurant);
+      menuRepositoryMock.deleteMenuItem.mockReturnValue(true);
+
+      const user = { sub: 'user-1', role: UserRole.ADMIN };
+      service.deleteMenuItem('restaurant-1', 'starters', 'gf-starter-1', user);
+
+      expect(restaurantsServiceMock.findById).toHaveBeenCalledWith(
+        'restaurant-1',
+      );
+      expect(menuRepositoryMock.deleteMenuItem).toHaveBeenCalledWith(
+        'restaurant-1',
+        'starters',
+        'gf-starter-1',
+      );
+    });
+
+    it('should delete a menu item when the user is the restaurant owner and has the STAFF role', () => {
+      restaurantsServiceMock.findById.mockReturnValue(restaurant);
+      menuRepositoryMock.deleteMenuItem.mockReturnValue(true);
+
+      const user = { sub: 'user-1', role: UserRole.STAFF };
+      service.deleteMenuItem('restaurant-1', 'starters', 'gf-starter-1', user);
+
+      expect(menuRepositoryMock.deleteMenuItem).toHaveBeenCalledWith(
+        'restaurant-1',
+        'starters',
+        'gf-starter-1',
+      );
+    });
+
+    it('should throw NotFoundException when the restaurant does not exist', () => {
+      restaurantsServiceMock.findById.mockReturnValue(undefined);
+
+      const user = { sub: 'user-1', role: UserRole.ADMIN };
+
+      expect(() =>
+        service.deleteMenuItem(
+          'restaurant-1',
+          'starters',
+          'gf-starter-1',
+          user,
+        ),
+      ).toThrow(NotFoundException);
+      expect(menuRepositoryMock.deleteMenuItem).not.toHaveBeenCalled();
+    });
+
+    it('should throw ForbiddenException when the user is not an admin or staff member', () => {
+      restaurantsServiceMock.findById.mockReturnValue(restaurant);
+
+      const user = { sub: 'user-1', role: UserRole.CUSTOMER };
+
+      expect(() =>
+        service.deleteMenuItem(
+          'restaurant-1',
+          'starters',
+          'gf-starter-1',
+          user,
+        ),
+      ).toThrow(ForbiddenException);
+      expect(menuRepositoryMock.deleteMenuItem).not.toHaveBeenCalled();
+    });
+
+    it('should throw ForbiddenException when the user is a staff member but not the restaurant owner', () => {
+      restaurantsServiceMock.findById.mockReturnValue(restaurant);
+
+      const user = { sub: 'user-2', role: UserRole.STAFF };
+
+      expect(() =>
+        service.deleteMenuItem(
+          'restaurant-1',
+          'starters',
+          'gf-starter-1',
+          user,
+        ),
+      ).toThrow(ForbiddenException);
+      expect(menuRepositoryMock.deleteMenuItem).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when the menu item does not exist', () => {
+      restaurantsServiceMock.findById.mockReturnValue(restaurant);
+      menuRepositoryMock.deleteMenuItem.mockReturnValue(false);
+
+      const user = { sub: 'user-1', role: UserRole.ADMIN };
+
+      expect(() =>
+        service.deleteMenuItem(
+          'restaurant-1',
+          'starters',
+          'invalid-menu-item',
+          user,
+        ),
+      ).toThrow(NotFoundException);
+      expect(menuRepositoryMock.deleteMenuItem).toHaveBeenCalledWith(
+        'restaurant-1',
+        'starters',
+        'invalid-menu-item',
       );
     });
   });
