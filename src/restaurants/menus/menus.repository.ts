@@ -2,10 +2,8 @@ import { Injectable } from '@nestjs/common';
 
 // extras
 import { RestaurantMenu } from './entities/restaurant-menu.entity.js';
-import { CreateMenuItemDto } from './dto/create-menu.dto.js';
-import type { MenuItem } from './entities/menu-item.entity.js';
 import { MenuCategory } from './entities/menu-category.entity.js';
-import { UpdateMenuItemDto } from './dto/update-menu.dto.js';
+import type { MenuItem } from './entities/menu-item.entity.js';
 
 @Injectable()
 export class MenusRepository {
@@ -170,7 +168,7 @@ export class MenusRepository {
   createMenuItem(
     restaurantId: string,
     categoryId: string,
-    createMenuItemDto: CreateMenuItemDto,
+    data: Omit<MenuItem, 'id'>,
   ): MenuItem | undefined {
     const category = this.findCategory(restaurantId, categoryId);
 
@@ -180,7 +178,7 @@ export class MenusRepository {
 
     const newMenuItem: MenuItem = {
       id: `${category.id}-${Date.now()}`,
-      ...createMenuItemDto,
+      ...data,
     };
 
     category.items.push(newMenuItem);
@@ -192,7 +190,7 @@ export class MenusRepository {
     restaurantId: string,
     categoryId: string,
     menuItemId: string,
-    updateMenuItemDto: UpdateMenuItemDto,
+    data: Partial<Omit<MenuItem, 'id'>>,
   ): MenuItem | undefined {
     const menuItem = this.findMenuItemById(
       restaurantId,
@@ -204,7 +202,7 @@ export class MenusRepository {
       return undefined;
     }
 
-    Object.assign(menuItem, updateMenuItemDto);
+    Object.assign(menuItem, data);
     return menuItem;
   }
 

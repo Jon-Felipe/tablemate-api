@@ -14,12 +14,12 @@ import { UpdateMenuItemDto } from './dto/update-menu.dto.js';
 @Injectable()
 export class MenusService {
   constructor(
-    private readonly menuRepository: MenusRepository,
+    private readonly menusRepository: MenusRepository,
     private readonly restaurantsRepository: RestaurantsRepository,
   ) {}
 
   findMenuByRestaurantId(restaurantId: string) {
-    const menu = this.menuRepository.findMenuByRestaurantId(restaurantId);
+    const menu = this.menusRepository.findMenuByRestaurantId(restaurantId);
 
     if (!menu)
       throw new NotFoundException(
@@ -34,7 +34,7 @@ export class MenusService {
     categoryId: string,
     menuItemId: string,
   ) {
-    const menuItem = this.menuRepository.findMenuItemById(
+    const menuItem = this.menusRepository.findMenuItemById(
       restaurantId,
       categoryId,
       menuItemId,
@@ -69,7 +69,7 @@ export class MenusService {
       );
     }
 
-    const menu = this.menuRepository.findMenuByRestaurantId(restaurantId);
+    const menu = this.menusRepository.findMenuByRestaurantId(restaurantId);
 
     if (!menu) {
       throw new NotFoundException(
@@ -77,7 +77,7 @@ export class MenusService {
       );
     }
 
-    const category = this.menuRepository.findCategoryById(
+    const category = this.menusRepository.findCategoryById(
       restaurantId,
       categoryId,
     );
@@ -86,7 +86,7 @@ export class MenusService {
       throw new NotFoundException(`Category with ID ${categoryId} not found`);
     }
 
-    const menuItem = this.menuRepository.createMenuItem(
+    const menuItem = this.menusRepository.createMenuItem(
       restaurantId,
       categoryId,
       createMenuItemDto,
@@ -123,7 +123,7 @@ export class MenusService {
       );
     }
 
-    const menuItem = this.menuRepository.updateMenuItem(
+    const menuItem = this.menusRepository.updateMenuItem(
       restaurantId,
       categoryId,
       menuItemId,
@@ -160,7 +160,7 @@ export class MenusService {
       );
     }
 
-    const deleted = this.menuRepository.deleteMenuItem(
+    const deleted = this.menusRepository.deleteMenuItem(
       restaurantId,
       categoryId,
       menuItemId,
