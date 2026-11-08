@@ -231,7 +231,7 @@ describe('MenusController', () => {
         'restaurant-1',
         'starters',
         'starters-123456',
-        request,
+        request.user,
       );
     });
   });
