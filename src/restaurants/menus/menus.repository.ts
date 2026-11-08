@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
 
+// extras
 import { RestaurantMenu } from './entities/restaurant-menu.entity.js';
+import { CreateMenuItemDto } from './dto/create-menu.dto.js';
+import type { MenuItem } from './entities/menu-item.entity.js';
+import { MenuCategory } from './entities/menu-category.entity.js';
+import { UpdateMenuItemDto } from './dto/update-menu.dto.js';
 
 @Injectable()
-export class MenuRepository {
+export class MenusRepository {
   private readonly menus: RestaurantMenu[] = [
     {
       restaurantId: 'restaurant-1',
@@ -144,5 +149,90 @@ export class MenuRepository {
 
   findMenuByRestaurantId(restaurantId: string): RestaurantMenu | undefined {
     return this.menus.find((m) => m.restaurantId === restaurantId);
+  }
+
+  findCategoryById(
+    restaurantId: string,
+    categoryId: string,
+  ): MenuCategory | undefined {
+    return this.findCategory(restaurantId, categoryId);
+  }
+
+  findMenuItemById(
+    restaurantId: string,
+    categoryId: string,
+    menuItemId: string,
+  ): MenuItem | undefined {
+    const category = this.findCategory(restaurantId, categoryId);
+    return category?.items.find((item) => item.id === menuItemId);
+  }
+
+  createMenuItem(
+    restaurantId: string,
+    categoryId: string,
+    createMenuItemDto: CreateMenuItemDto,
+  ): MenuItem | undefined {
+    const category = this.findCategory(restaurantId, categoryId);
+
+    if (!category) {
+      return undefined;
+    }
+
+    const newMenuItem: MenuItem = {
+      id: `${category.id}-${Date.now()}`,
+      ...createMenuItemDto,
+    };
+
+    category.items.push(newMenuItem);
+
+    return newMenuItem;
+  }
+
+  updateMenuItem(
+    restaurantId: string,
+    categoryId: string,
+    menuItemId: string,
+    updateMenuItemDto: UpdateMenuItemDto,
+  ): MenuItem | undefined {
+    const menuItem = this.findMenuItemById(
+      restaurantId,
+      categoryId,
+      menuItemId,
+    );
+
+    if (!menuItem) {
+      return undefined;
+    }
+
+    Object.assign(menuItem, updateMenuItemDto);
+    return menuItem;
+  }
+
+  deleteMenuItem(
+    restaurantId: string,
+    categoryId: string,
+    menuItemId: string,
+  ): boolean {
+    const category = this.findCategory(restaurantId, categoryId);
+
+    if (!category) {
+      return false;
+    }
+
+    const menuItemIndex = category.items.findIndex(
+      (item) => item.id === menuItemId,
+    );
+
+    if (menuItemIndex === -1) {
+      return false;
+    }
+
+    category.items.splice(menuItemIndex, 1);
+    return true;
+  }
+
+  private findCategory(restaurantId: string, categoryId: string) {
+    const menu = this.findMenuByRestaurantId(restaurantId);
+    return menu?.categories.find((c) => c.id === categoryId);
   }
 }

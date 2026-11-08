@@ -4,7 +4,5 @@ import { UsersModule } from './users/users.module.js';
 
 @Module({
   imports: [RestaurantsModule, UsersModule],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}
