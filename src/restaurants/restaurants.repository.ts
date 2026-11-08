@@ -141,19 +141,8 @@ export class RestaurantsRepository {
     return this.restaurants.find((r) => r.id === id);
   }
 
-  create(
-    data: Omit<Restaurant, 'id' | 'ownerId' | 'rating'>,
-    ownerId: string,
-  ): Restaurant {
-    const restaurant: Restaurant = {
-      id: `restaurant-${this.restaurants.length + 1}`,
-      ...data,
-      ownerId,
-      rating: 0,
-    };
-
+  create(restaurant: Restaurant): Restaurant {
     this.restaurants.push(restaurant);
-
     return restaurant;
   }
 
