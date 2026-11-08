@@ -160,6 +160,14 @@ export class MenusService {
       );
     }
 
-    this.menuRepository.deleteMenuItem(restaurantId, categoryId, menuItemId);
+    const deleted = this.menuRepository.deleteMenuItem(
+      restaurantId,
+      categoryId,
+      menuItemId,
+    );
+
+    if (!deleted) {
+      throw new NotFoundException(`Menu item with ID ${menuItemId} not found`);
+    }
   }
 }
