@@ -15,6 +15,7 @@ describe('MenusController', () => {
     findMenuByRestaurantId: vi.fn(),
     findMenuItemById: vi.fn(),
     createMenuItem: vi.fn(),
+    updateMenuItem: vi.fn(),
   };
 
   const createMenuItemDto: CreateMenuItemDto = {
@@ -164,6 +165,46 @@ describe('MenusController', () => {
         'restaurant-1',
         'desserts',
         createMenuItemDto,
+        request.user,
+      );
+    });
+  });
+
+  describe('updateMenuItem', () => {
+    it('should update a menu item successfully', () => {
+      const updateMenuItemDto = {
+        name: 'Updated Menu Item',
+        description: 'An updated test menu item for unit testing.',
+        price: 12.99,
+        imageUrl: 'https://example.com/updated-menu-item.jpg',
+      };
+
+      const updatedMenuItem = {
+        id: 'starters-123456',
+        ...updateMenuItemDto,
+      };
+
+      menusServiceMock.updateMenuItem.mockReturnValue(updatedMenuItem);
+
+      const result = controller.updateMenuItem(
+        'restaurant-1',
+        'starters',
+        'starters-123456',
+        updateMenuItemDto,
+        request,
+      );
+
+      expect(result).toEqual({
+        statusCode: 200,
+        message: 'Menu Item updated successfully',
+        data: updatedMenuItem,
+      });
+
+      expect(menusServiceMock.updateMenuItem).toHaveBeenCalledWith(
+        'restaurant-1',
+        'starters',
+        'starters-123456',
+        updateMenuItemDto,
         request.user,
       );
     });

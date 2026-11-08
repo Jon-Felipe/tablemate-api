@@ -14,6 +14,7 @@ describe('MenusService', () => {
     findCategoryById: vi.fn(),
     findMenuItemById: vi.fn(),
     createMenuItem: vi.fn(),
+    updateMenuItem: vi.fn(),
   };
 
   const restaurantsServiceMock = {
@@ -251,6 +252,131 @@ describe('MenusService', () => {
         ),
       ).toThrow(NotFoundException);
       expect(menuRepositoryMock.createMenuItem).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateMenuItem', () => {
+    it('should update a menu item when the user is an admin', () => {
+      restaurantsServiceMock.findById.mockReturnValue(restaurant);
+      const updatedMenuItem = { ...newMenuItem, name: 'Updated Menu Item' };
+      menuRepositoryMock.updateMenuItem.mockReturnValue(updatedMenuItem);
+
+      const user = { sub: 'user-1', role: UserRole.ADMIN };
+      const result = service.updateMenuItem(
+        'restaurant-1',
+        'starters',
+        'menu-item-1',
+        { name: 'Updated Menu Item' },
+        user,
+      );
+
+      expect(result).toEqual(updatedMenuItem);
+      expect(restaurantsServiceMock.findById).toHaveBeenCalledWith(
+        'restaurant-1',
+      );
+      expect(menuRepositoryMock.updateMenuItem).toHaveBeenCalledWith(
+        'restaurant-1',
+        'starters',
+        'menu-item-1',
+        { name: 'Updated Menu Item' },
+      );
+    });
+
+    it('should update a menu item when the user is the restaurant owner and has the STAFF role', () => {
+      restaurantsServiceMock.findById.mockReturnValue(restaurant);
+      const updatedMenuItem = { ...newMenuItem, name: 'Updated Menu Item' };
+      menuRepositoryMock.updateMenuItem.mockReturnValue(updatedMenuItem);
+
+      const user = { sub: 'user-1', role: UserRole.STAFF };
+      const result = service.updateMenuItem(
+        'restaurant-1',
+        'starters',
+        'menu-item-1',
+        { name: 'Updated Menu Item' },
+        user,
+      );
+
+      expect(result).toEqual(updatedMenuItem);
+      expect(menuRepositoryMock.updateMenuItem).toHaveBeenCalledWith(
+        'restaurant-1',
+        'starters',
+        'menu-item-1',
+        { name: 'Updated Menu Item' },
+      );
+    });
+
+    it('should throw NotFoundException when the restaurant does not exist', () => {
+      restaurantsServiceMock.findById.mockReturnValue(undefined);
+
+      const user = { sub: 'user-1', role: UserRole.ADMIN };
+
+      expect(() =>
+        service.updateMenuItem(
+          'restaurant-1',
+          'starters',
+          'menu-item-1',
+          { name: 'Updated Menu Item' },
+          user,
+        ),
+      ).toThrow(NotFoundException);
+      expect(menuRepositoryMock.updateMenuItem).not.toHaveBeenCalled();
+    });
+
+    it('should throw ForbiddenException when the user is not an admin or staff member', () => {
+      restaurantsServiceMock.findById.mockReturnValue(restaurant);
+
+      const user = { sub: 'user-1', role: UserRole.CUSTOMER };
+
+      expect(() =>
+        service.updateMenuItem(
+          'restaurant-1',
+          'starters',
+          'menu-item-1',
+          { name: 'Updated Menu Item' },
+          user,
+        ),
+      ).toThrow(ForbiddenException);
+      expect(menuRepositoryMock.updateMenuItem).not.toHaveBeenCalled();
+    });
+
+    it('should throw ForbiddenException when the user is a staff member but not the restaurant owner', () => {
+      restaurantsServiceMock.findById.mockReturnValue(restaurant);
+
+      const user = { sub: 'user-2', role: UserRole.STAFF };
+
+      expect(() =>
+        service.updateMenuItem(
+          'restaurant-1',
+          'starters',
+          'menu-item-1',
+          { name: 'Updated Menu Item' },
+          user,
+        ),
+      ).toThrow(ForbiddenException);
+      expect(menuRepositoryMock.updateMenuItem).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when the menu item does not exist', () => {
+      restaurantsServiceMock.findById.mockReturnValue(restaurant);
+      menuRepositoryMock.updateMenuItem.mockReturnValue(undefined);
+
+      const user = { sub: 'user-1', role: UserRole.ADMIN };
+
+      expect(() =>
+        service.updateMenuItem(
+          'restaurant-1',
+          'starters',
+          'invalid-menu-item',
+          { name: 'Updated Menu Item' },
+          user,
+        ),
+      ).toThrow(NotFoundException);
+      expect(menuRepositoryMock.updateMenuItem).toHaveBeenCalledWith(
+        'restaurant-1',
+        'starters',
+        'invalid-menu-item',
+        { name: 'Updated Menu Item' },
+      );
     });
   });
 });
