@@ -51,8 +51,8 @@ export class MenusController {
     };
   }
 
-  @Post('categories/:categoryId/items')
   @UseGuards(JwtAuthGuard)
+  @Post('categories/:categoryId/items')
   createMenuItem(
     @Param('restaurantId') restaurantId: string,
     @Param('categoryId') categoryId: string,
@@ -73,8 +73,8 @@ export class MenusController {
     };
   }
 
-  @Patch('categories/:categoryId/items/:menuItemId')
   @UseGuards(JwtAuthGuard)
+  @Patch('categories/:categoryId/items/:menuItemId')
   updateMenuItem(
     @Param('restaurantId') restaurantId: string,
     @Param('categoryId') categoryId: string,
@@ -97,8 +97,8 @@ export class MenusController {
     };
   }
 
-  @Delete('categories/:categoryId/items/:menuItemId')
   @UseGuards(JwtAuthGuard)
+  @Delete('categories/:categoryId/items/:menuItemId')
   deleteMenuItem(
     @Param('restaurantId') restaurantId: string,
     @Param('categoryId') categoryId: string,
