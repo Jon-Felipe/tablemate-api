@@ -109,7 +109,7 @@ Restaurant creation requires `name`, `imageUrl`, `description`, `cuisine`, `addr
 | `PATCH` | `/restaurants/:restaurantId/menus/categories/:categoryId/items/:menuItemId` | Owner staff or admin | Update a menu item |
 | `DELETE` | `/restaurants/:restaurantId/menus/categories/:categoryId/items/:menuItemId` | Owner staff or admin | Delete a menu item |
 
-Menu item creation requires `name`, `description`, and a non-negative `price` (up to two decimal places); `imageUrl` is also accepted. Update routes accept any subset of the corresponding create fields.
+Menu item creation requires `name`, `description`, `imageUrl`, and a non-negative `price` (up to two decimal places). Update routes accept any subset of the corresponding create fields.
 
 ### Responses and validation
 
