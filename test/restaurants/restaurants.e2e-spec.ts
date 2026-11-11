@@ -53,13 +53,8 @@ describe('Restaurants (e2e)', () => {
         .post('/api/v1/restaurants')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .send({
+          ...restaurantPayload,
           name: '',
-          imageUrl:
-            'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
-          description: 'Authentic Italian cuisine',
-          cuisine: 'Italian',
-          address: '10 Church Street',
-          city: 'Cape Town',
         })
         .expect(400);
     });
@@ -67,15 +62,7 @@ describe('Restaurants (e2e)', () => {
     it('should return 401 without a token', () => {
       return request(app.getHttpServer())
         .post('/api/v1/restaurants')
-        .send({
-          name: 'La Piazza',
-          imageUrl:
-            'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
-          description: 'Authentic Italian cuisine',
-          cuisine: 'Italian',
-          address: '10 Church Street',
-          city: 'Cape Town',
-        })
+        .send(restaurantPayload)
         .expect(401);
     });
 
@@ -83,15 +70,7 @@ describe('Restaurants (e2e)', () => {
       return request(app.getHttpServer())
         .post('/api/v1/restaurants')
         .set('Authorization', `Bearer ${customerAccessToken}`)
-        .send({
-          name: 'La Piazza',
-          imageUrl:
-            'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
-          description: 'Authentic Italian cuisine',
-          cuisine: 'Italian',
-          address: '10 Church Street',
-          city: 'Cape Town',
-        })
+        .send(restaurantPayload)
         .expect(403);
     });
 
@@ -99,27 +78,19 @@ describe('Restaurants (e2e)', () => {
       return request(app.getHttpServer())
         .post('/api/v1/restaurants')
         .set('Authorization', `Bearer ${adminAccessToken}`)
-        .send({
-          name: 'La Piazza',
-          imageUrl:
-            'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
-          description: 'Authentic Italian cuisine',
-          cuisine: 'Italian',
-          address: '10 Church Street',
-          city: 'Cape Town',
-        })
+        .send(restaurantPayload)
         .expect(201)
         .expect((response) => {
           expect(response.body.statusCode).toBe(201);
           expect(response.body.message).toBe('Restaurant created successfully');
           expect(response.body.data).toEqual(
             expect.objectContaining({
-              name: 'La Piazza',
+              name: 'Test Restaurant',
               ownerId: 'e2e-admin-1',
-              description: 'Authentic Italian cuisine',
+              description: 'A test restaurant',
               cuisine: 'Italian',
-              address: '10 Church Street',
-              city: 'Cape Town',
+              address: '123 Test St',
+              city: 'Test City',
             }),
           );
           expect(response.body.data.id).toBeDefined();
@@ -173,7 +144,7 @@ describe('Restaurants (e2e)', () => {
         .expect(403);
     });
 
-    it('should update a restaurant', () => {
+    it('should update a restaurant as admin', () => {
       return request(app.getHttpServer())
         .patch('/api/v1/restaurants/restaurant-1')
         .set('Authorization', `Bearer ${adminAccessToken}`)
