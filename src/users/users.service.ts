@@ -4,12 +4,15 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+
+// extras
+import { UpdateUserDto } from './dto/update-user.dto.js';
 import { UsersRepository } from './users.repository.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { User, UserRole } from './entities/user.entity.js';
 import { PasswordHashingService } from './password-hashing.service.js';
 import { LoginDto } from './dto/login.dto.js';
-import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
@@ -77,5 +80,14 @@ export class UsersService {
     });
 
     return { user, accessToken };
+  }
+
+  update(id: string, updatedUser: UpdateUserDto): User {
+    const updatedUserResult = this.usersRepository.update(id, updatedUser);
+
+    if (!updatedUserResult)
+      throw new NotFoundException(`User with ID ${id} not found`);
+
+    return updatedUserResult;
   }
 }

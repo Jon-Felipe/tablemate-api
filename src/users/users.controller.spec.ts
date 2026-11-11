@@ -5,6 +5,7 @@ import { User, UserRole } from './entities/user.entity.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -14,6 +15,7 @@ describe('UsersController', () => {
     findById: vi.fn(),
     create: vi.fn(),
     login: vi.fn(),
+    update: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -34,169 +36,221 @@ describe('UsersController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should return all users without password hashes', () => {
-    const users: User[] = [
-      {
-        id: 'user-1',
-        name: 'Alice Johnson',
-        email: 'alice@example.com',
-        passwordHash: 'hashed-password-1',
-        role: UserRole.CUSTOMER,
-      },
-      {
-        id: 'user-2',
-        name: 'Bob Smith',
-        email: 'bob@example.com',
-        passwordHash: 'hashed-password-2',
-        role: UserRole.STAFF,
-      },
-    ];
-
-    usersServiceMock.findAll.mockReturnValue(users);
-
-    const result = controller.findAll();
-    expect(usersServiceMock.findAll).toHaveBeenCalled();
-    expect(result).toEqual({
-      statusCode: 200,
-      message: 'Users retrieved successfully',
-      data: [
+  describe('findAll', () => {
+    it('should return all users without password hashes', () => {
+      const users: User[] = [
         {
           id: 'user-1',
           name: 'Alice Johnson',
           email: 'alice@example.com',
+          passwordHash: 'hashed-password-1',
           role: UserRole.CUSTOMER,
         },
         {
           id: 'user-2',
           name: 'Bob Smith',
           email: 'bob@example.com',
+          passwordHash: 'hashed-password-2',
           role: UserRole.STAFF,
         },
-      ],
+      ];
+
+      usersServiceMock.findAll.mockReturnValue(users);
+
+      const result = controller.findAll();
+      expect(usersServiceMock.findAll).toHaveBeenCalled();
+      expect(result).toEqual({
+        statusCode: 200,
+        message: 'Users retrieved successfully',
+        data: [
+          {
+            id: 'user-1',
+            name: 'Alice Johnson',
+            email: 'alice@example.com',
+            role: UserRole.CUSTOMER,
+          },
+          {
+            id: 'user-2',
+            name: 'Bob Smith',
+            email: 'bob@example.com',
+            role: UserRole.STAFF,
+          },
+        ],
+      });
     });
   });
 
-  it('should return the current user without the password hash', () => {
-    const user: User = {
-      id: 'user-1',
-      name: 'Alice Johnson',
-      email: 'alice@example.com',
-      passwordHash: 'hashed-password-1',
-      role: UserRole.CUSTOMER,
-    };
-    usersServiceMock.findById.mockReturnValue(user);
-
-    const request = {
-      user: {
-        sub: 'user-1',
-        role: 'CUSTOMER',
-      },
-    };
-
-    const result = controller.findMe(request as any);
-    expect(usersServiceMock.findById).toHaveBeenCalledWith('user-1');
-    expect(result).toEqual({
-      statusCode: 200,
-      message: 'Current user retrieved successfully',
-      data: {
+  describe('findMe', () => {
+    it('should return the current user without the password hash', () => {
+      const user: User = {
         id: 'user-1',
         name: 'Alice Johnson',
         email: 'alice@example.com',
+        passwordHash: 'hashed-password-1',
         role: UserRole.CUSTOMER,
-      },
-    });
-  });
+      };
+      usersServiceMock.findById.mockReturnValue(user);
 
-  it('should return a user by id without the password hash', () => {
-    const user: User = {
-      id: 'user-1',
-      name: 'Alice Johnson',
-      email: 'alice@example.com',
-      passwordHash: 'hashed-password-1',
-      role: UserRole.CUSTOMER,
-    };
-    usersServiceMock.findById.mockReturnValue(user);
-
-    const result = controller.findById('user-1');
-    expect(usersServiceMock.findById).toHaveBeenCalledWith('user-1');
-    expect(result).toEqual({
-      statusCode: 200,
-      message: 'User retrieved successfully',
-      data: {
-        id: 'user-1',
-        name: 'Alice Johnson',
-        email: 'alice@example.com',
-        role: UserRole.CUSTOMER,
-      },
-    });
-  });
-
-  it('should create a user', async () => {
-    const createUserDto: CreateUserDto = {
-      name: 'David Jones',
-      email: 'david@example.com',
-      password: 'secret123',
-    };
-
-    const createdUser: User = {
-      id: 'user-4',
-      name: 'David Jones',
-      email: 'david@example.com',
-      passwordHash: 'test-argon2-hash',
-      role: UserRole.CUSTOMER,
-    };
-
-    usersServiceMock.create.mockResolvedValue(createdUser);
-
-    const result = await controller.create(createUserDto);
-
-    expect(usersServiceMock.create).toHaveBeenCalledWith(createUserDto);
-    expect(result).toEqual({
-      statusCode: 201,
-      message: 'User created successfully',
-      data: {
-        id: 'user-4',
-        name: 'David Jones',
-        email: 'david@example.com',
-        role: UserRole.CUSTOMER,
-      },
-    });
-  });
-
-  it('should log in a user without returning the password hash', async () => {
-    const loginDto: LoginDto = {
-      email: 'alice@example.com',
-      password: 'mySecretPassword123',
-    };
-
-    const user: User = {
-      id: 'user-1',
-      name: 'Alice Johnson',
-      email: 'alice@example.com',
-      passwordHash: 'test-argon2-hash',
-      role: UserRole.CUSTOMER,
-    };
-
-    usersServiceMock.login.mockResolvedValue({
-      user,
-      accessToken: 'test-access-token',
-    });
-
-    const result = await controller.login(loginDto);
-
-    expect(usersServiceMock.login).toHaveBeenCalledWith(loginDto);
-    expect(result).toEqual({
-      statusCode: 200,
-      message: 'Login successful',
-      data: {
+      const request = {
         user: {
+          sub: 'user-1',
+          role: 'CUSTOMER',
+        },
+      };
+
+      const result = controller.findMe(request as any);
+      expect(usersServiceMock.findById).toHaveBeenCalledWith('user-1');
+      expect(result).toEqual({
+        statusCode: 200,
+        message: 'Current user retrieved successfully',
+        data: {
           id: 'user-1',
           name: 'Alice Johnson',
           email: 'alice@example.com',
           role: UserRole.CUSTOMER,
         },
+      });
+    });
+  });
+
+  describe('findById', () => {
+    it('should return a user by id without the password hash', () => {
+      const user: User = {
+        id: 'user-1',
+        name: 'Alice Johnson',
+        email: 'alice@example.com',
+        passwordHash: 'hashed-password-1',
+        role: UserRole.CUSTOMER,
+      };
+      usersServiceMock.findById.mockReturnValue(user);
+
+      const result = controller.findById('user-1');
+      expect(usersServiceMock.findById).toHaveBeenCalledWith('user-1');
+      expect(result).toEqual({
+        statusCode: 200,
+        message: 'User retrieved successfully',
+        data: {
+          id: 'user-1',
+          name: 'Alice Johnson',
+          email: 'alice@example.com',
+          role: UserRole.CUSTOMER,
+        },
+      });
+    });
+  });
+
+  describe('create', () => {
+    it('should create a user', async () => {
+      const createUserDto: CreateUserDto = {
+        name: 'David Jones',
+        email: 'david@example.com',
+        password: 'secret123',
+      };
+
+      const createdUser: User = {
+        id: 'user-4',
+        name: 'David Jones',
+        email: 'david@example.com',
+        passwordHash: 'test-argon2-hash',
+        role: UserRole.CUSTOMER,
+      };
+
+      usersServiceMock.create.mockResolvedValue(createdUser);
+
+      const result = await controller.create(createUserDto);
+
+      expect(usersServiceMock.create).toHaveBeenCalledWith(createUserDto);
+      expect(result).toEqual({
+        statusCode: 201,
+        message: 'User created successfully',
+        data: {
+          id: 'user-4',
+          name: 'David Jones',
+          email: 'david@example.com',
+          role: UserRole.CUSTOMER,
+        },
+      });
+    });
+  });
+
+  describe('login', () => {
+    it('should log in a user without returning the password hash', async () => {
+      const loginDto: LoginDto = {
+        email: 'alice@example.com',
+        password: 'mySecretPassword123',
+      };
+
+      const user: User = {
+        id: 'user-1',
+        name: 'Alice Johnson',
+        email: 'alice@example.com',
+        passwordHash: 'test-argon2-hash',
+        role: UserRole.CUSTOMER,
+      };
+
+      usersServiceMock.login.mockResolvedValue({
+        user,
         accessToken: 'test-access-token',
-      },
+      });
+
+      const result = await controller.login(loginDto);
+
+      expect(usersServiceMock.login).toHaveBeenCalledWith(loginDto);
+      expect(result).toEqual({
+        statusCode: 200,
+        message: 'Login successful',
+        data: {
+          user: {
+            id: 'user-1',
+            name: 'Alice Johnson',
+            email: 'alice@example.com',
+            role: UserRole.CUSTOMER,
+          },
+          accessToken: 'test-access-token',
+        },
+      });
+    });
+
+    describe('update', () => {
+      it('should update the user successfully', () => {
+        const updateUserDto: UpdateUserDto = {
+          name: 'Updated Name',
+        };
+
+        const updatedUser: User = {
+          id: 'user-1',
+          name: 'Updated Name',
+          email: 'alice@example.com',
+          passwordHash: 'test-argon2-hash',
+          role: UserRole.CUSTOMER,
+        };
+
+        usersServiceMock.update.mockReturnValue(updatedUser);
+
+        const request = {
+          user: {
+            sub: 'user-1',
+            role: 'CUSTOMER',
+          },
+        };
+
+        const result = controller.update(updateUserDto, request as any);
+
+        expect(usersServiceMock.update).toHaveBeenCalledWith(
+          'user-1',
+          updateUserDto,
+        );
+        expect(result).toEqual({
+          statusCode: 200,
+          message: 'User updated successfully',
+          data: {
+            id: 'user-1',
+            name: 'Updated Name',
+            email: 'alice@example.com',
+            role: UserRole.CUSTOMER,
+          },
+        });
+      });
     });
   });
 });

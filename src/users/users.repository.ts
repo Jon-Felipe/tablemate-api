@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+
+// extras
 import { User, UserRole } from './entities/user.entity.js';
 
 @Injectable()
@@ -43,6 +45,18 @@ export class UsersRepository {
 
   create(user: User): User {
     this.users.push(user);
+
+    return user;
+  }
+
+  update(id: string, updatedUser: Partial<User>): User | undefined {
+    const user = this.findById(id);
+
+    if (!user) {
+      return undefined;
+    }
+
+    Object.assign(user, updatedUser);
 
     return user;
   }

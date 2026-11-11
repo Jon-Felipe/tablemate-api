@@ -6,11 +6,15 @@ import {
   HttpStatus,
   Param,
   Post,
+  Patch,
   Req,
   UseGuards,
 } from '@nestjs/common';
+
+// extras
 import { UsersService } from './users.service.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 import type { AuthenticatedRequest } from './types/authenticated-request.js';
@@ -44,6 +48,25 @@ export class UsersController {
     return {
       statusCode: 200,
       message: 'Current user retrieved successfully',
+      data: safeUser,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me')
+  update(
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    const user = request.user;
+
+    const updatedUser = this.usersService.update(user.sub, updateUserDto);
+
+    const { passwordHash: _passwordHash, ...safeUser } = updatedUser;
+
+    return {
+      statusCode: 200,
+      message: 'User updated successfully',
       data: safeUser,
     };
   }
