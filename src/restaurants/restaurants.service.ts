@@ -35,9 +35,7 @@ export class RestaurantsService {
       throw new ForbiddenException('You are not allowed to create restaurants');
     }
 
-    const ownerId = user.sub;
-
-    return this.restaurantsRepository.create(createRestaurantDto, ownerId);
+    return this.restaurantsRepository.create(createRestaurantDto, user.sub);
   }
 
   update(

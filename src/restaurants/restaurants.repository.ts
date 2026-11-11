@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 import { Restaurant } from './entities/restaurant.entity.js';
 
 @Injectable()
@@ -141,19 +142,22 @@ export class RestaurantsRepository {
     return this.restaurants.find((r) => r.id === id);
   }
 
-  create(
-    data: Omit<Restaurant, 'id' | 'ownerId' | 'rating'>,
-    ownerId: string,
-  ): Restaurant {
+  create(createRestaurantDto: CreateRestaurantDto, ownerId: string): Restaurant {
+    const nextId =
+      Math.max(
+        0,
+        ...this.restaurants.map((restaurant) =>
+          Number(restaurant.id.replace('restaurant-', '')),
+        ),
+      ) + 1;
     const restaurant: Restaurant = {
-      id: `restaurant-${this.restaurants.length + 1}`,
-      ...data,
+      id: `restaurant-${nextId}`,
+      ...createRestaurantDto,
       ownerId,
       rating: 0,
     };
 
     this.restaurants.push(restaurant);
-
     return restaurant;
   }
 

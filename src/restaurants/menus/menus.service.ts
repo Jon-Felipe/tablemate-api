@@ -86,17 +86,11 @@ export class MenusService {
       throw new NotFoundException(`Category with ID ${categoryId} not found`);
     }
 
-    const menuItem = this.menusRepository.createMenuItem(
+    return this.menusRepository.createMenuItem(
       restaurantId,
       categoryId,
       createMenuItemDto,
     );
-
-    if (!menuItem) {
-      throw new NotFoundException(`Failed to create menu item`);
-    }
-
-    return menuItem;
   }
 
   updateMenuItem(
