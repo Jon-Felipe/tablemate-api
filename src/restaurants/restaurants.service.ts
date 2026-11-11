@@ -9,7 +9,6 @@ import { RestaurantsRepository } from './restaurants.repository.js';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
 import { UserRole } from '../users/entities/user.entity.js';
-import type { Restaurant } from './entities/restaurant.entity.js';
 
 @Injectable()
 export class RestaurantsService {
@@ -36,14 +35,7 @@ export class RestaurantsService {
       throw new ForbiddenException('You are not allowed to create restaurants');
     }
 
-    const newRestaurant: Restaurant = {
-      id: crypto.randomUUID(),
-      ...createRestaurantDto,
-      ownerId: user.sub,
-      rating: 0,
-    };
-
-    return this.restaurantsRepository.create(newRestaurant);
+    return this.restaurantsRepository.create(createRestaurantDto, user.sub);
   }
 
   update(

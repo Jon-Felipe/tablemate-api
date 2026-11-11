@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { RestaurantMenu } from './entities/restaurant-menu.entity.js';
 import { MenuCategory } from './entities/menu-category.entity.js';
 import type { MenuItem } from './entities/menu-item.entity.js';
+import type { CreateMenuItemDto } from './dto/create-menu.dto.js';
 
 @Injectable()
 export class MenusRepository {
@@ -168,13 +169,18 @@ export class MenusRepository {
   createMenuItem(
     restaurantId: string,
     categoryId: string,
-    menuItem: MenuItem,
+    createMenuItemDto: CreateMenuItemDto,
   ): MenuItem | undefined {
     const category = this.findCategory(restaurantId, categoryId);
 
     if (!category) {
       return undefined;
     }
+
+    const menuItem: MenuItem = {
+      id: crypto.randomUUID(),
+      ...createMenuItemDto,
+    };
 
     category.items.push(menuItem);
     return menuItem;
