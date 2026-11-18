@@ -54,7 +54,7 @@ export class RestaurantsController {
 
     return {
       statusCode: 200,
-      message: 'Restaurant retrieved successfully',
+      message: 'Restaurant details retrieved successfully',
       data: restaurant,
     };
   }

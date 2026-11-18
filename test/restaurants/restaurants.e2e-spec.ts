@@ -11,11 +11,18 @@ describe('Restaurants (e2e)', () => {
 
   const restaurantPayload = {
     name: 'Test Restaurant',
-    imageUrl: 'https://example.com/image.jpg',
     description: 'A test restaurant',
     cuisine: 'Italian',
+    priceLevel: 3,
     address: '123 Test St',
     city: 'Test City',
+    postalCode: '8001',
+    country: 'South Africa',
+    latitude: -33.9249,
+    longitude: 18.4241,
+    phoneNumber: '+27 21 555 0100',
+    email: 'hello@test-restaurant.example',
+    websiteUrl: 'https://test-restaurant.example',
   };
 
   beforeEach(async () => {
@@ -106,7 +113,7 @@ describe('Restaurants (e2e)', () => {
         .expect((response) => {
           expect(response.body.statusCode).toBe(200);
           expect(response.body.message).toBe(
-            'Restaurant retrieved successfully',
+            'Restaurant details retrieved successfully',
           );
           expect(response.body.data).toEqual(
             expect.objectContaining({
@@ -159,8 +166,6 @@ describe('Restaurants (e2e)', () => {
             expect.objectContaining({
               id: 'restaurant-1',
               name: 'The Golden Fork Updated',
-              imageUrl:
-                'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
               description: 'Modern European cuisine in a relaxed atmosphere.',
               cuisine: 'European',
             }),

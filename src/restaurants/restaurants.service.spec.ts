@@ -7,6 +7,11 @@ import { RestaurantsRepository } from './restaurants.repository.js';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
 import { UserRole } from '../users/entities/user.entity.js';
+import { AwardsRepository } from './repositories/awards.repository.js';
+import { RestaurantAwardsRepository } from './repositories/restaurant-awards.repository.js';
+import { RestaurantFeaturesRepository } from './repositories/restaurant-features.repository.js';
+import { RestaurantImagesRepository } from './repositories/restaurant-images.repository.js';
+import { RestaurantInformationRepository } from './repositories/restaurant-information.repository.js';
 
 describe('RestaurantsService', () => {
   let service: RestaurantsService;
@@ -34,6 +39,12 @@ describe('RestaurantsService', () => {
     remove: vi.fn(),
   };
 
+  const restaurantImagesRepositoryMock = { findByRestaurantId: vi.fn() };
+  const restaurantInformationRepositoryMock = { findByRestaurantId: vi.fn() };
+  const restaurantFeaturesRepositoryMock = { findByRestaurantId: vi.fn() };
+  const awardsRepositoryMock = { findById: vi.fn() };
+  const restaurantAwardsRepositoryMock = { findByRestaurantId: vi.fn() };
+
   beforeEach(async () => {
     vi.clearAllMocks();
 
@@ -41,6 +52,23 @@ describe('RestaurantsService', () => {
       providers: [
         RestaurantsService,
         { provide: RestaurantsRepository, useValue: restaurantsRepositoryMock },
+        {
+          provide: RestaurantImagesRepository,
+          useValue: restaurantImagesRepositoryMock,
+        },
+        {
+          provide: RestaurantInformationRepository,
+          useValue: restaurantInformationRepositoryMock,
+        },
+        {
+          provide: RestaurantFeaturesRepository,
+          useValue: restaurantFeaturesRepositoryMock,
+        },
+        { provide: AwardsRepository, useValue: awardsRepositoryMock },
+        {
+          provide: RestaurantAwardsRepository,
+          useValue: restaurantAwardsRepositoryMock,
+        },
       ],
     }).compile();
 
@@ -59,47 +87,72 @@ describe('RestaurantsService', () => {
     expect(result).toEqual(restaurants);
   });
 
-  it('should return a restaurant by id', () => {
+  it('should return all details for a restaurant', () => {
     const restaurant = { id: 'restaurant-1', name: 'The Golden Fork' };
-    restaurantsRepositoryMock.findById.mockReturnValue(restaurant);
+    const images = [{ id: 'restaurant-image-1' }];
+    const information = [{ id: 'restaurant-information-1' }];
+    const features = [{ id: 'restaurant-feature-1' }];
+    const restaurantAward = {
+      id: 'restaurant-award-1',
+      restaurantId: restaurant.id,
+      awardId: 'award-1',
+      year: 2025,
+    };
+    const award = { id: 'award-1', name: 'Best Fine Dining' };
 
-    const result = service.findById('restaurant-1');
-    expect(result).toEqual(restaurant);
+    restaurantsRepositoryMock.findById.mockReturnValue(restaurant);
+    restaurantImagesRepositoryMock.findByRestaurantId.mockReturnValue(images);
+    restaurantInformationRepositoryMock.findByRestaurantId.mockReturnValue(
+      information,
+    );
+    restaurantFeaturesRepositoryMock.findByRestaurantId.mockReturnValue(
+      features,
+    );
+    restaurantAwardsRepositoryMock.findByRestaurantId.mockReturnValue([
+      restaurantAward,
+    ]);
+    awardsRepositoryMock.findById.mockReturnValue(award);
+
+    expect(service.findById(restaurant.id)).toEqual({
+      ...restaurant,
+      images,
+      information,
+      features,
+      awards: [{ ...restaurantAward, award }],
+    });
+    expect(awardsRepositoryMock.findById).toHaveBeenCalledWith('award-1');
   });
 
-  it('should throw NotFoundException when a restaurant does not exist', () => {
+  it('should throw NotFoundException when requesting details for a missing restaurant', () => {
     restaurantsRepositoryMock.findById.mockReturnValue(undefined);
 
-    expect(() => {
-      service.findById('does-not-exist');
-    }).toThrow(NotFoundException);
-  });
-
-  it('should find a restaurant using the provided id', () => {
-    const restaurant = { id: 'restaurant-1', name: 'The Golden Fork' };
-    restaurantsRepositoryMock.findById.mockReturnValue(restaurant);
-
-    service.findById('restaurant-1');
-    expect(restaurantsRepositoryMock.findById).toHaveBeenCalledWith(
-      'restaurant-1',
-    );
+    expect(() => service.findById('does-not-exist')).toThrow(NotFoundException);
+    expect(
+      restaurantImagesRepositoryMock.findByRestaurantId,
+    ).not.toHaveBeenCalled();
   });
 
   it('should create a restaurant', () => {
     const createRestaurantDto: CreateRestaurantDto = {
       name: 'La Piazza',
-      imageUrl: 'https://example.com/restaurant.jpg',
       description: 'Authentic Italian cuisine.',
       cuisine: 'Italian',
+      priceLevel: 3,
       address: '10 Church Street',
       city: 'Cape Town',
+      postalCode: '8001',
+      country: 'South Africa',
+      latitude: -33.9249,
+      longitude: 18.4241,
+      phoneNumber: '+27 21 555 0100',
+      email: 'hello@lapiazza.example',
+      websiteUrl: 'https://lapiazza.example',
     };
 
     const restaurant = {
       id: 'restaurant-4',
       ...createRestaurantDto,
       ownerId: staffUser.sub,
-      rating: 0,
     };
 
     restaurantsRepositoryMock.create.mockReturnValue(restaurant);
@@ -196,11 +249,18 @@ describe('RestaurantsService', () => {
   it('should throw ForbiddenException when an unauthorized user tries to create a restaurant', () => {
     const createRestaurantDto: CreateRestaurantDto = {
       name: 'La Piazza',
-      imageUrl: 'https://example.com/restaurant.jpg',
       description: 'Authentic Italian cuisine.',
       cuisine: 'Italian',
+      priceLevel: 3,
       address: '10 Church Street',
       city: 'Cape Town',
+      postalCode: '8001',
+      country: 'South Africa',
+      latitude: -33.9249,
+      longitude: 18.4241,
+      phoneNumber: '+27 21 555 0100',
+      email: 'hello@lapiazza.example',
+      websiteUrl: 'https://lapiazza.example',
     };
 
     expect(() => {

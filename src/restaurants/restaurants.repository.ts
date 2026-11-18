@@ -4,135 +4,125 @@ import { Restaurant } from './entities/restaurant.entity.js';
 
 @Injectable()
 export class RestaurantsRepository {
-  private readonly restaurants: Restaurant[] = [
+  private readonly restaurantSeeds = [
     {
       id: 'restaurant-1',
       ownerId: 'user-2',
       name: 'The Golden Fork',
-      imageUrl:
-        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
       description: 'Modern European cuisine in a relaxed atmosphere.',
       cuisine: 'European',
       address: '12 Main Street',
       city: 'Johannesburg',
-      rating: 4.7,
     },
     {
       id: 'restaurant-2',
       ownerId: 'user-1',
       name: 'Casa Verde',
-      imageUrl:
-        'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80',
       description: 'Fresh Italian dishes made with seasonal ingredients.',
       cuisine: 'Italian',
       address: '45 Oak Avenue',
       city: 'Cape Town',
-      rating: 4.5,
     },
     {
       id: 'restaurant-3',
       ownerId: 'user-2',
       name: 'Sakura House',
-      imageUrl:
-        'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1200&q=80',
       description: 'Traditional Japanese cuisine with a modern touch.',
       cuisine: 'Japanese',
       address: '8 Market Road',
       city: 'Durban',
-      rating: 4.8,
     },
     {
       id: 'restaurant-4',
       ownerId: 'user-1',
       name: 'The Coastal Table',
-      imageUrl:
-        'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=80',
       description:
         'Fresh seafood and coastal-inspired dishes with ocean views.',
       cuisine: 'Seafood',
       address: '22 Beach Road',
       city: 'Cape Town',
-      rating: 4.6,
     },
     {
       id: 'restaurant-5',
       ownerId: 'user-2',
       name: 'Ubuntu Kitchen',
-      imageUrl:
-        'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80',
       description:
         'Traditional South African favourites with a contemporary twist.',
       cuisine: 'South African',
       address: '18 Vilakazi Street',
       city: 'Johannesburg',
-      rating: 4.9,
     },
     {
       id: 'restaurant-6',
       ownerId: 'user-1',
       name: 'Spice Route',
-      imageUrl:
-        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
       description:
         'Aromatic curries and authentic Indian dishes made with fresh spices.',
       cuisine: 'Indian',
       address: '31 Long Street',
       city: 'Cape Town',
-      rating: 4.4,
     },
     {
       id: 'restaurant-7',
       ownerId: 'user-2',
       name: 'Mamma Mia Pizzeria',
-      imageUrl:
-        'https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=1200&q=80',
       description:
         'Wood-fired pizzas topped with fresh ingredients and Italian cheeses.',
       cuisine: 'Italian',
       address: '56 Florida Road',
       city: 'Durban',
-      rating: 4.3,
     },
     {
       id: 'restaurant-8',
       ownerId: 'user-1',
       name: 'Green Garden Bistro',
-      imageUrl:
-        'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80',
       description:
         'Wholesome plant-based meals made with seasonal local produce.',
       cuisine: 'Vegan',
       address: '14 7th Street',
       city: 'Johannesburg',
-      rating: 4.6,
     },
     {
       id: 'restaurant-9',
       ownerId: 'user-2',
       name: 'Dragon Wok',
-      imageUrl:
-        'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200&q=80',
       description:
         'Chinese-inspired stir-fries, noodles, and freshly prepared dumplings.',
       cuisine: 'Chinese',
       address: '27 Grey Street',
       city: 'Durban',
-      rating: 4.2,
     },
     {
       id: 'restaurant-10',
       ownerId: 'user-1',
       name: 'The Breakfast Club',
-      imageUrl:
-        'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=1200&q=80',
       description:
         'All-day breakfasts, artisan coffee, and freshly baked pastries.',
       cuisine: 'Breakfast',
       address: '9 Kloof Street',
       city: 'Cape Town',
-      rating: 4.5,
     },
   ];
+
+  private readonly restaurants: Restaurant[] = this.restaurantSeeds.map(
+    (restaurant) => ({
+      ...restaurant,
+      slug: restaurant.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, ''),
+      priceLevel: 2,
+      postalCode: '',
+      country: 'South Africa',
+      latitude: 0,
+      longitude: 0,
+      phoneNumber: '',
+      email: '',
+      websiteUrl: '',
+      createdAt: new Date('2025-01-01'),
+      updatedAt: new Date('2025-01-01'),
+    }),
+  );
 
   findAll() {
     return this.restaurants;
@@ -142,7 +132,10 @@ export class RestaurantsRepository {
     return this.restaurants.find((r) => r.id === id);
   }
 
-  create(createRestaurantDto: CreateRestaurantDto, ownerId: string): Restaurant {
+  create(
+    createRestaurantDto: CreateRestaurantDto,
+    ownerId: string,
+  ): Restaurant {
     const nextId =
       Math.max(
         0,
@@ -150,11 +143,17 @@ export class RestaurantsRepository {
           Number(restaurant.id.replace('restaurant-', '')),
         ),
       ) + 1;
+    const now = new Date();
     const restaurant: Restaurant = {
       id: `restaurant-${nextId}`,
       ...createRestaurantDto,
       ownerId,
-      rating: 0,
+      slug: createRestaurantDto.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, ''),
+      createdAt: now,
+      updatedAt: now,
     };
 
     this.restaurants.push(restaurant);
@@ -163,7 +162,7 @@ export class RestaurantsRepository {
 
   update(
     id: string,
-    data: Partial<Omit<Restaurant, 'id' | 'ownerId' | 'rating'>>,
+    data: Partial<Omit<Restaurant, 'id' | 'ownerId' | 'createdAt'>>,
   ): Restaurant | undefined {
     const restaurantIndex = this.restaurants.findIndex((r) => r.id === id);
 
@@ -174,6 +173,7 @@ export class RestaurantsRepository {
     this.restaurants[restaurantIndex] = {
       ...this.restaurants[restaurantIndex],
       ...data,
+      updatedAt: new Date(),
     };
 
     return this.restaurants[restaurantIndex];

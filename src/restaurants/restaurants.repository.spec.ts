@@ -59,22 +59,32 @@ describe('RestaurantsRepository', () => {
   it('should create a restaurant', () => {
     const createRestaurantDto: CreateRestaurantDto = {
       name: 'La Piazza',
-      imageUrl:
-        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
       description: 'Authentic Italian cuisine.',
       cuisine: 'Italian',
+      priceLevel: 3,
       address: '10 Church Street',
       city: 'Cape Town',
+      postalCode: '8001',
+      country: 'South Africa',
+      latitude: -33.9249,
+      longitude: 18.4241,
+      phoneNumber: '+27 21 555 0100',
+      email: 'hello@lapiazza.example',
+      websiteUrl: 'https://lapiazza.example',
     };
 
     const result = repository.create(createRestaurantDto, 'user-1');
 
-    expect(result).toEqual({
-      id: 'restaurant-11',
-      ...createRestaurantDto,
-      ownerId: 'user-1',
-      rating: 0,
-    });
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: 'restaurant-11',
+        ...createRestaurantDto,
+        ownerId: 'user-1',
+        slug: 'la-piazza',
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      }),
+    );
 
     expect(repository.findAll()).toHaveLength(11);
 
@@ -96,7 +106,6 @@ describe('RestaurantsRepository', () => {
         cuisine: 'European',
         address: '12 Main Street',
         city: 'Johannesburg',
-        rating: 4.7,
       }),
     );
 
