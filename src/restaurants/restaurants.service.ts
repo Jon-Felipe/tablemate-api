@@ -27,7 +27,13 @@ export class RestaurantsService {
   ) {}
 
   findAll() {
-    return this.restaurantsRepository.findAll();
+    return this.restaurantsRepository.findAll().map((restaurant) => ({
+      ...restaurant,
+      coverImage:
+        this.restaurantImagesRepository.findPrimaryImageByRestaurantId(
+          restaurant.id,
+        ),
+    }));
   }
 
   findById(id: string) {
