@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 // extras
-import {
-  MenuType,
-  type RestaurantMenu,
-} from './entities/restaurant-menu.entity.js';
+import { type RestaurantMenu } from './entities/restaurant-menu.entity.js';
 import { MenuCategory } from './entities/menu-category.entity.js';
 import type { MenuItem } from './entities/menu-item.entity.js';
 import type { CreateMenuItemDto } from './dto/create-menu.dto.js';
@@ -164,7 +161,6 @@ export class MenusRepository {
         id,
         restaurantId: menu.restaurantId,
         name: 'Main Menu',
-        type: MenuType.DINNER,
         description: 'Our current selection of dishes and drinks.',
         isActive: true,
         categories: menu.categories.map((category, categoryIndex) => ({
