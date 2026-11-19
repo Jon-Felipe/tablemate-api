@@ -66,6 +66,30 @@ export class MenusRepository {
             },
           ],
         },
+        {
+          id: 'desserts',
+          name: 'Desserts',
+          items: [
+            {
+              id: 'gf-dessert-1',
+              name: 'Dark Chocolate Fondant',
+              description:
+                'Warm dark chocolate fondant with vanilla bean ice cream.',
+              price: 85,
+              imageUrl:
+                'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80',
+            },
+            {
+              id: 'gf-dessert-2',
+              name: 'Classic Tiramisu',
+              description:
+                'Espresso-soaked sponge layered with mascarpone and cocoa.',
+              price: 75,
+              imageUrl:
+                'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=800&q=80',
+            },
+          ],
+        },
       ],
     },
     {
