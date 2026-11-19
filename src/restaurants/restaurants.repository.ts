@@ -9,7 +9,8 @@ export class RestaurantsRepository {
       id: 'restaurant-1',
       ownerId: 'user-2',
       name: 'The Golden Fork',
-      description: 'Modern European cuisine in a relaxed atmosphere.',
+      description:
+        'Modern European cuisine in a relaxed atmosphere, with a focus on seasonal ingredients. The menu changes regularly to highlight the freshest produce available. A perfect spot for both casual dining and special occasions. Local wines and craft cocktails complement the menu beautifully. Ideal for both lunch and dinner, with a welcoming ambiance for all guests.',
       cuisine: 'European',
       address: '12 Main Street',
       city: 'Johannesburg',

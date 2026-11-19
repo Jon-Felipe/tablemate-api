@@ -25,6 +25,13 @@ export class RestaurantAwardsRepository {
       year: 2025,
       awardedAt: new Date('2025-03-20'),
     },
+    {
+      id: 'restaurant-award-4',
+      restaurantId: 'restaurant-1',
+      awardId: 'award-2',
+      year: 2025,
+      awardedAt: new Date('2025-05-10'),
+    },
   ];
 
   findByRestaurantId(restaurantId: string): RestaurantAward[] {

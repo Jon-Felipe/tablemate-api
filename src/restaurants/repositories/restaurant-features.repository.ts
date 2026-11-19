@@ -36,6 +36,14 @@ export class RestaurantFeaturesRepository {
       icon: 'utensils',
       displayOrder: 1,
     },
+    {
+      id: 'restaurant-feature-5',
+      restaurantId: 'restaurant-1',
+      title: 'Outdoor seating',
+      description: 'Enjoy your meal in our beautiful outdoor patio area.',
+      icon: 'sun',
+      displayOrder: 3,
+    },
   ];
 
   findByRestaurantId(restaurantId: string): RestaurantFeature[] {

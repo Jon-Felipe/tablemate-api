@@ -45,6 +45,15 @@ export class RestaurantInformationRepository {
       icon: 'accessibility',
       displayOrder: 1,
     },
+    {
+      id: 'restaurant-information-5',
+      restaurantId: 'restaurant-1',
+      type: RestaurantInformationType.CORKAGE,
+      title: 'Corkage',
+      description: 'Guests may bring one bottle for a R100 corkage fee.',
+      icon: 'wine',
+      displayOrder: 3,
+    },
   ];
 
   findByRestaurantId(restaurantId: string): RestaurantInformation[] {
