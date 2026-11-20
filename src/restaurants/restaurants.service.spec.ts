@@ -39,7 +39,10 @@ describe('RestaurantsService', () => {
     remove: vi.fn(),
   };
 
-  const restaurantImagesRepositoryMock = { findByRestaurantId: vi.fn() };
+  const restaurantImagesRepositoryMock = {
+    findByRestaurantId: vi.fn(),
+    findPrimaryImageByRestaurantId: vi.fn(),
+  };
   const restaurantInformationRepositoryMock = { findByRestaurantId: vi.fn() };
   const restaurantFeaturesRepositoryMock = { findByRestaurantId: vi.fn() };
   const awardsRepositoryMock = { findById: vi.fn() };
@@ -81,10 +84,14 @@ describe('RestaurantsService', () => {
 
   it('should return all restaurants', () => {
     const restaurants = [{ id: 'restaurant-1', name: 'The Golden Fork' }];
+    const coverImage = { id: 'restaurant-image-1' };
     restaurantsRepositoryMock.findAll.mockReturnValue(restaurants);
+    restaurantImagesRepositoryMock.findPrimaryImageByRestaurantId.mockReturnValue(
+      coverImage,
+    );
 
     const result = service.findAll();
-    expect(result).toEqual(restaurants);
+    expect(result).toEqual([{ ...restaurants[0], coverImage }]);
   });
 
   it('should return all details for a restaurant', () => {

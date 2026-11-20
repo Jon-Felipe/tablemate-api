@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
+
+// extras
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 import { Restaurant } from './entities/restaurant.entity.js';
+import { FindRestaurantQueryDto } from './dto/find-restaurant-query.dto.js';
 
 @Injectable()
 export class RestaurantsRepository {
@@ -125,8 +128,47 @@ export class RestaurantsRepository {
     }),
   );
 
-  findAll() {
-    return this.restaurants;
+  findAll(query: FindRestaurantQueryDto = new FindRestaurantQueryDto()) {
+    const {
+      search,
+      city,
+      cuisine,
+      priceLevel,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    } = query;
+    const normalizedSearch = search?.trim().toLowerCase();
+    const normalizedCity = city?.trim().toLowerCase();
+    const normalizedCuisine = cuisine?.trim().toLowerCase();
+
+    const restaurants = this.restaurants.filter(
+      (restaurant) =>
+        (!normalizedSearch ||
+          `${restaurant.name} ${restaurant.description}`
+            .toLowerCase()
+            .includes(normalizedSearch)) &&
+        (!normalizedCity ||
+          restaurant.city.toLowerCase() === normalizedCity) &&
+        (!normalizedCuisine ||
+          restaurant.cuisine.toLowerCase() === normalizedCuisine) &&
+        (priceLevel === undefined || restaurant.priceLevel === priceLevel),
+    );
+
+    restaurants.sort((first, second) => {
+      const firstValue = first[sortBy];
+      const secondValue = second[sortBy];
+      const comparison =
+        typeof firstValue === 'number' && typeof secondValue === 'number'
+          ? firstValue - secondValue
+          : String(firstValue).localeCompare(String(secondValue));
+
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+
+    const offset = (page - 1) * limit;
+    return restaurants.slice(offset, offset + limit);
   }
 
   findById(id: string) {

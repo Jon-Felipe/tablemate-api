@@ -14,7 +14,12 @@ describe('RestaurantsRepository', () => {
   });
 
   it('should return all restaurants', () => {
-    const result = repository.findAll();
+    const result = repository.findAll({
+      page: 1,
+      limit: 100,
+      sortBy: 'name',
+      sortOrder: 'asc',
+    });
 
     expect(result).toHaveLength(10);
     expect(result).toEqual(
@@ -36,6 +41,25 @@ describe('RestaurantsRepository', () => {
           name: 'The Breakfast Club',
         }),
       ]),
+    );
+  });
+
+  it('should filter, sort, and paginate restaurants', () => {
+    const result = repository.findAll({
+      city: '  cape town ',
+      cuisine: 'ITALIAN',
+      page: 1,
+      limit: 1,
+      sortBy: 'name',
+      sortOrder: 'desc',
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual(
+      expect.objectContaining({
+        id: 'restaurant-2',
+        name: 'Casa Verde',
+      }),
     );
   });
 
@@ -86,7 +110,14 @@ describe('RestaurantsRepository', () => {
       }),
     );
 
-    expect(repository.findAll()).toHaveLength(11);
+    expect(
+      repository.findAll({
+        page: 1,
+        limit: 100,
+        sortBy: 'name',
+        sortOrder: 'asc',
+      }),
+    ).toHaveLength(11);
 
     const foundRestaurant = repository.findById('restaurant-11');
     expect(foundRestaurant).toEqual(result);
@@ -102,7 +133,8 @@ describe('RestaurantsRepository', () => {
       expect.objectContaining({
         id: 'restaurant-1',
         name: 'The Golden Fork Updated',
-        description: 'Modern European cuisine in a relaxed atmosphere.',
+        description:
+          'Modern European cuisine in a relaxed atmosphere, with a focus on seasonal ingredients. The menu changes regularly to highlight the freshest produce available. A perfect spot for both casual dining and special occasions. Local wines and craft cocktails complement the menu beautifully. Ideal for both lunch and dinner, with a welcoming ambiance for all guests.',
         cuisine: 'European',
         address: '12 Main Street',
         city: 'Johannesburg',

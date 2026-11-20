@@ -8,6 +8,7 @@ import {
 import { RestaurantsRepository } from './restaurants.repository.js';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
+import { FindRestaurantQueryDto } from './dto/find-restaurant-query.dto.js';
 import { UserRole } from '../users/entities/user.entity.js';
 import { AwardsRepository } from './repositories/awards.repository.js';
 import { RestaurantAwardsRepository } from './repositories/restaurant-awards.repository.js';
@@ -26,8 +27,8 @@ export class RestaurantsService {
     private readonly restaurantAwardsRepository: RestaurantAwardsRepository,
   ) {}
 
-  findAll() {
-    return this.restaurantsRepository.findAll().map((restaurant) => ({
+  findAll(query: FindRestaurantQueryDto = new FindRestaurantQueryDto()) {
+    return this.restaurantsRepository.findAll(query).map((restaurant) => ({
       ...restaurant,
       coverImage:
         this.restaurantImagesRepository.findPrimaryImageByRestaurantId(

@@ -49,7 +49,22 @@ describe('Restaurants (e2e)', () => {
           expect(response.body.message).toBe(
             'Restaurants retrieved successfully',
           );
-          expect(response.body.data).toHaveLength(10);
+          expect(response.body.data).toHaveLength(8);
+        });
+    });
+
+    it('should filter restaurants with query parameters', () => {
+      return request(app.getHttpServer())
+        .get('/api/v1/restaurants')
+        .query({ city: 'Durban', cuisine: 'Italian' })
+        .expect(200)
+        .expect((response) => {
+          expect(response.body.data).toEqual([
+            expect.objectContaining({
+              id: 'restaurant-7',
+              name: 'Mamma Mia Pizzeria',
+            }),
+          ]);
         });
     });
   });
@@ -166,7 +181,8 @@ describe('Restaurants (e2e)', () => {
             expect.objectContaining({
               id: 'restaurant-1',
               name: 'The Golden Fork Updated',
-              description: 'Modern European cuisine in a relaxed atmosphere.',
+              description:
+                'Modern European cuisine in a relaxed atmosphere, with a focus on seasonal ingredients. The menu changes regularly to highlight the freshest produce available. A perfect spot for both casual dining and special occasions. Local wines and craft cocktails complement the menu beautifully. Ideal for both lunch and dinner, with a welcoming ambiance for all guests.',
               cuisine: 'European',
             }),
           );
