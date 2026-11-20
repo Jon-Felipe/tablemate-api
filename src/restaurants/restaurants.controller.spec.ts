@@ -65,8 +65,15 @@ describe('RestaurantsController', () => {
     });
   });
 
-  it('should return a restaurant by id', () => {
-    const restaurant = { id: 'restaurant-1', name: 'The Golden Fork' };
+  it('should return a restaurant with all details by id', () => {
+    const restaurant = {
+      id: 'restaurant-1',
+      name: 'The Golden Fork',
+      images: [],
+      information: [],
+      features: [],
+      awards: [],
+    };
     restaurantsServiceMock.findById.mockReturnValue(restaurant);
 
     const result = controller.findById('restaurant-1');
@@ -75,7 +82,7 @@ describe('RestaurantsController', () => {
     );
     expect(result).toEqual({
       statusCode: 200,
-      message: 'Restaurant retrieved successfully',
+      message: 'Restaurant details retrieved successfully',
       data: restaurant,
     });
   });
@@ -83,19 +90,24 @@ describe('RestaurantsController', () => {
   it('should create a restaurant', () => {
     const createRestaurantDto: CreateRestaurantDto = {
       name: 'La Piazza',
-      imageUrl:
-        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
       description: 'Authentic Italian cuisine.',
       cuisine: 'Italian',
+      priceLevel: 3,
       address: '10 Church Street',
       city: 'Cape Town',
+      postalCode: '8001',
+      country: 'South Africa',
+      latitude: -33.9249,
+      longitude: 18.4241,
+      phoneNumber: '+27 21 555 0100',
+      email: 'hello@lapiazza.example',
+      websiteUrl: 'https://lapiazza.example',
     };
 
     const restaurant = {
       id: 'restaurant-4',
       ...createRestaurantDto,
       ownerId: staffUser.sub,
-      rating: 0,
     };
 
     const request = { user: staffUser };

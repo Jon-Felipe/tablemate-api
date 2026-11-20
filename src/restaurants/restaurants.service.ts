@@ -8,23 +8,56 @@ import {
 import { RestaurantsRepository } from './restaurants.repository.js';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
+import { FindRestaurantQueryDto } from './dto/find-restaurant-query.dto.js';
 import { UserRole } from '../users/entities/user.entity.js';
+import { AwardsRepository } from './repositories/awards.repository.js';
+import { RestaurantAwardsRepository } from './repositories/restaurant-awards.repository.js';
+import { RestaurantFeaturesRepository } from './repositories/restaurant-features.repository.js';
+import { RestaurantImagesRepository } from './repositories/restaurant-images.repository.js';
+import { RestaurantInformationRepository } from './repositories/restaurant-information.repository.js';
 
 @Injectable()
 export class RestaurantsService {
-  constructor(private readonly restaurantsRepository: RestaurantsRepository) {}
+  constructor(
+    private readonly restaurantsRepository: RestaurantsRepository,
+    private readonly restaurantImagesRepository: RestaurantImagesRepository,
+    private readonly restaurantInformationRepository: RestaurantInformationRepository,
+    private readonly restaurantFeaturesRepository: RestaurantFeaturesRepository,
+    private readonly awardsRepository: AwardsRepository,
+    private readonly restaurantAwardsRepository: RestaurantAwardsRepository,
+  ) {}
 
-  findAll() {
-    return this.restaurantsRepository.findAll();
+  findAll(query: FindRestaurantQueryDto = new FindRestaurantQueryDto()) {
+    return this.restaurantsRepository.findAll(query).map((restaurant) => ({
+      ...restaurant,
+      coverImage:
+        this.restaurantImagesRepository.findPrimaryImageByRestaurantId(
+          restaurant.id,
+        ),
+    }));
   }
 
   findById(id: string) {
     const restaurant = this.restaurantsRepository.findById(id);
 
-    if (!restaurant)
+    if (!restaurant) {
       throw new NotFoundException(`Restaurant with ID ${id} not found`);
+    }
 
-    return restaurant;
+    const awards = this.restaurantAwardsRepository
+      .findByRestaurantId(id)
+      .map((restaurantAward) => ({
+        ...restaurantAward,
+        award: this.awardsRepository.findById(restaurantAward.awardId),
+      }));
+
+    return {
+      ...restaurant,
+      images: this.restaurantImagesRepository.findByRestaurantId(id),
+      information: this.restaurantInformationRepository.findByRestaurantId(id),
+      features: this.restaurantFeaturesRepository.findByRestaurantId(id),
+      awards,
+    };
   }
 
   create(

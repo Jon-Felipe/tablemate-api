@@ -9,12 +9,14 @@ import {
   Post,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 
 // extras
 import { RestaurantsService } from './restaurants.service.js';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
+import { FindRestaurantQueryDto } from './dto/find-restaurant-query.dto.js';
 import { JwtAuthGuard } from '../users/jwt-auth.guard.js';
 import { MenusService } from './menus/menus.service.js';
 import type { AuthenticatedRequest } from '../users/types/authenticated-request.js';
@@ -27,8 +29,10 @@ export class RestaurantsController {
   ) {}
 
   @Get()
-  findAll() {
-    const restaurants = this.restaurantsService.findAll();
+  findAll(
+    @Query() query: FindRestaurantQueryDto = new FindRestaurantQueryDto(),
+  ) {
+    const restaurants = this.restaurantsService.findAll(query);
 
     return {
       statusCode: 200,
@@ -54,7 +58,7 @@ export class RestaurantsController {
 
     return {
       statusCode: 200,
-      message: 'Restaurant retrieved successfully',
+      message: 'Restaurant details retrieved successfully',
       data: restaurant,
     };
   }

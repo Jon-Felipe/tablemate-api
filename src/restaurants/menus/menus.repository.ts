@@ -1,14 +1,22 @@
 import { Injectable } from '@nestjs/common';
 
 // extras
-import { RestaurantMenu } from './entities/restaurant-menu.entity.js';
+import { type RestaurantMenu } from './entities/restaurant-menu.entity.js';
 import { MenuCategory } from './entities/menu-category.entity.js';
 import type { MenuItem } from './entities/menu-item.entity.js';
 import type { CreateMenuItemDto } from './dto/create-menu.dto.js';
 
+type MenuCategoryRecord = MenuCategory & {
+  items: MenuItem[];
+};
+
+type RestaurantMenuRecord = RestaurantMenu & {
+  categories: MenuCategoryRecord[];
+};
+
 @Injectable()
 export class MenusRepository {
-  private readonly menus: RestaurantMenu[] = [
+  private readonly menuSeeds = [
     {
       restaurantId: 'restaurant-1',
       categories: [
@@ -55,6 +63,30 @@ export class MenusRepository {
               price: 165,
               imageUrl:
                 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=800&q=80',
+            },
+          ],
+        },
+        {
+          id: 'desserts',
+          name: 'Desserts',
+          items: [
+            {
+              id: 'gf-dessert-1',
+              name: 'Dark Chocolate Fondant',
+              description:
+                'Warm dark chocolate fondant with vanilla bean ice cream.',
+              price: 85,
+              imageUrl:
+                'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80',
+            },
+            {
+              id: 'gf-dessert-2',
+              name: 'Classic Tiramisu',
+              description:
+                'Espresso-soaked sponge layered with mascarpone and cocoa.',
+              price: 75,
+              imageUrl:
+                'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=800&q=80',
             },
           ],
         },
@@ -146,7 +178,34 @@ export class MenusRepository {
     },
   ];
 
-  findMenuByRestaurantId(restaurantId: string): RestaurantMenu | undefined {
+  private readonly menus: RestaurantMenuRecord[] = this.menuSeeds.map(
+    (menu, menuIndex) => {
+      const id = `menu-${menuIndex + 1}`;
+      return {
+        id,
+        restaurantId: menu.restaurantId,
+        name: 'Main Menu',
+        description: 'Our current selection of dishes and drinks.',
+        isActive: true,
+        categories: menu.categories.map((category, categoryIndex) => ({
+          ...category,
+          menuId: id,
+          displayOrder: categoryIndex + 1,
+          items: category.items.map((item, itemIndex) => ({
+            ...item,
+            categoryId: category.id,
+            currency: 'ZAR',
+            isAvailable: true,
+            displayOrder: itemIndex + 1,
+          })),
+        })),
+      };
+    },
+  );
+
+  findMenuByRestaurantId(
+    restaurantId: string,
+  ): RestaurantMenuRecord | undefined {
     return this.menus.find((m) => m.restaurantId === restaurantId);
   }
 
@@ -180,6 +239,10 @@ export class MenusRepository {
     const menuItem: MenuItem = {
       id: crypto.randomUUID(),
       ...createMenuItemDto,
+      categoryId,
+      currency: 'ZAR',
+      isAvailable: true,
+      displayOrder: category.items.length + 1,
     };
 
     category.items.push(menuItem);
@@ -229,7 +292,10 @@ export class MenusRepository {
     return true;
   }
 
-  private findCategory(restaurantId: string, categoryId: string) {
+  private findCategory(
+    restaurantId: string,
+    categoryId: string,
+  ): MenuCategoryRecord | undefined {
     const menu = this.findMenuByRestaurantId(restaurantId);
     return menu?.categories.find((c) => c.id === categoryId);
   }

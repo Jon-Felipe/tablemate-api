@@ -1,6 +1,9 @@
-import { MenuCategory } from './menu-category.entity.js';
-
 export class RestaurantMenu {
+  id: string;
   restaurantId: string;
-  categories: MenuCategory[];
+
+  name: string;
+
+  description?: string;
+  isActive: boolean;
 }

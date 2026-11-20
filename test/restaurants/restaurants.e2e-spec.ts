@@ -11,11 +11,18 @@ describe('Restaurants (e2e)', () => {
 
   const restaurantPayload = {
     name: 'Test Restaurant',
-    imageUrl: 'https://example.com/image.jpg',
     description: 'A test restaurant',
     cuisine: 'Italian',
+    priceLevel: 3,
     address: '123 Test St',
     city: 'Test City',
+    postalCode: '8001',
+    country: 'South Africa',
+    latitude: -33.9249,
+    longitude: 18.4241,
+    phoneNumber: '+27 21 555 0100',
+    email: 'hello@test-restaurant.example',
+    websiteUrl: 'https://test-restaurant.example',
   };
 
   beforeEach(async () => {
@@ -42,7 +49,22 @@ describe('Restaurants (e2e)', () => {
           expect(response.body.message).toBe(
             'Restaurants retrieved successfully',
           );
-          expect(response.body.data).toHaveLength(10);
+          expect(response.body.data).toHaveLength(8);
+        });
+    });
+
+    it('should filter restaurants with query parameters', () => {
+      return request(app.getHttpServer())
+        .get('/api/v1/restaurants')
+        .query({ city: 'Durban', cuisine: 'Italian' })
+        .expect(200)
+        .expect((response) => {
+          expect(response.body.data).toEqual([
+            expect.objectContaining({
+              id: 'restaurant-7',
+              name: 'Mamma Mia Pizzeria',
+            }),
+          ]);
         });
     });
   });
@@ -106,7 +128,7 @@ describe('Restaurants (e2e)', () => {
         .expect((response) => {
           expect(response.body.statusCode).toBe(200);
           expect(response.body.message).toBe(
-            'Restaurant retrieved successfully',
+            'Restaurant details retrieved successfully',
           );
           expect(response.body.data).toEqual(
             expect.objectContaining({
@@ -159,9 +181,8 @@ describe('Restaurants (e2e)', () => {
             expect.objectContaining({
               id: 'restaurant-1',
               name: 'The Golden Fork Updated',
-              imageUrl:
-                'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
-              description: 'Modern European cuisine in a relaxed atmosphere.',
+              description:
+                'Modern European cuisine in a relaxed atmosphere, with a focus on seasonal ingredients. The menu changes regularly to highlight the freshest produce available. A perfect spot for both casual dining and special occasions. Local wines and craft cocktails complement the menu beautifully. Ideal for both lunch and dinner, with a welcoming ambiance for all guests.',
               cuisine: 'European',
             }),
           );

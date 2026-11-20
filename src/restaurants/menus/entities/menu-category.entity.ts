@@ -1,7 +1,7 @@
-import { MenuItem } from './menu-item.entity.js';
-
 export class MenuCategory {
   id: string;
+  menuId: string;
+
   name: string;
-  items: MenuItem[];
+  displayOrder: number;
 }

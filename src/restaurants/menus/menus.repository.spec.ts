@@ -89,10 +89,16 @@ describe('MenuRepository', () => {
         createMenuItemDto,
       );
 
-      expect(newMenuItem).toEqual({
-        id: expect.any(String),
-        ...createMenuItemDto,
-      });
+      expect(newMenuItem).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          ...createMenuItemDto,
+          categoryId: 'starters',
+          currency: 'ZAR',
+          isAvailable: true,
+          displayOrder: 3,
+        }),
+      );
       expect(newMenuItem?.id).toBeTruthy();
     });
 
@@ -159,10 +165,16 @@ describe('MenuRepository', () => {
         updateMenuItemDto,
       );
 
-      expect(updatedMenuItem).toEqual({
-        id: menuItemId,
-        ...updateMenuItemDto,
-      });
+      expect(updatedMenuItem).toEqual(
+        expect.objectContaining({
+          id: menuItemId,
+          ...updateMenuItemDto,
+          categoryId,
+          currency: 'ZAR',
+          isAvailable: true,
+          displayOrder: 1,
+        }),
+      );
     });
 
     it('should return undefined for an invalid menu item ID', () => {
